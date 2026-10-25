@@ -37,7 +37,8 @@ body {
   max-width: 480px;
   margin: 0 auto;
   padding: 16px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  /* 下のタブの高さ分あける */
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
 }
 
 h1 {
@@ -90,6 +91,7 @@ input[type='date'] {
   appearance: none;
   display: block;
   min-width: 0;
+  max-width: 100%;
 }
 
 input[type='date']::-webkit-date-and-time-value {
