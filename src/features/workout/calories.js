@@ -5,7 +5,7 @@
 // 筋トレ：「複数の種目を8〜15回、さまざまな重さで行う」の値（3.5 METs）
 // 参考：https://pacompendium.com/conditioning-exercise （コード 02054）
 const STRENGTH_METS = 3.5
-// 筋トレは時間を記録していないので、1セット＝休けい込みで約3分とみなす
+// 筋トレは時間を記録していないので、1セット＝休憩込みで約3分とみなす
 const MINUTES_PER_SET = 3
 
 function kcal(mets, bodyKg, minutes) {

@@ -164,7 +164,7 @@ export default function WorkoutPage() {
           <p className="workout-note">
             {weights.length === 0
               ? '体重の画面で体重を記録すると、消費カロリーの目安が出ます。'
-              : '消費カロリーは目安です。筋トレは1セット＝休けい込みで約3分として計算しています。'}
+              : '消費カロリーは目安です。筋トレは1セット＝休憩込みで約3分として計算しています。'}
           </p>
           {groupByDate(records).map(([d, items]) => {
             const bodyKg = bodyWeightOn(d, weights)

@@ -61,7 +61,7 @@
     - `RunEditor.jsx`：ランニングの入力。マシン（速度・傾斜・時間）と外（距離・時間）を切り替える。距離・速度は自動計算
     - `Stepper.jsx`：−／＋ボタン付きの数字の入力欄
     - `calories.js`：消費カロリーの目安の計算。METs × 体重 × 時間 × 1.05。体重は体重の画面の記録を使う
-      - 筋トレ：3.5 METs（https://pacompendium.com/conditioning-exercise コード02054）、1セット＝休けい込み約3分とみなす
+      - 筋トレ：3.5 METs（https://pacompendium.com/conditioning-exercise コード02054）、1セット＝休憩込み約3分とみなす
       - ランニング：ACSM の計算式で速度と傾斜から METs を出す（https://pmc.ncbi.nlm.nih.gov/articles/PMC3743617/ ）
       - 種目ごととその日の合計を表示する（1セットごとには出さない。本人と相談して決定）
     - 種目を選ぶと、前回のその種目の内容が最初から入る
