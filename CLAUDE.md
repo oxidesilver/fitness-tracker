@@ -39,9 +39,12 @@
 - **ホーム画面に置けるようにする（PWA）**：iPhone の Safari は7日間開かないサイトの保存データを消すことがあるが、ホーム画面に置いたアプリは対象外のため
   - https://developer.mozilla.org/ja/docs/Web/Progressive_web_apps
   - https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/
-- **公開方法**：Cloudflare Pages（Private リポジトリのまま無料で公開できる）
-  - https://developers.cloudflare.com/pages/
+- **公開方法**：GitHub Pages（リポジトリを Public にして無料で使う。本人が選んだ）
+  - URL：https://oxidesilver.github.io/fitness-tracker/
+  - `main` ブランチが更新されると `.github/workflows/deploy.yml` が自動で公開する
+  - https://docs.github.com/ja/pages/getting-started-with-github-pages/about-github-pages
   - 公開したURLを知っている人は開けるが、記録は各自のブラウザの中にあるので他人には見えない
+  - リポジトリは Public なので、パスワードなどの秘密や個人情報をファイルに書かない
 - 開発者のスマホは **iPhone**。動作確認は iPhone の Safari を基準にする
 
 ## ファイルの置き場所
@@ -55,7 +58,7 @@
 
 ## GitHub での作業
 
-- リポジトリ：`oxidesilver/fitness-tracker`（Private）
+- リポジトリ：`oxidesilver/fitness-tracker`（GitHub Pages のため Public にする）
 - 既存のファイルを削除・大きく変更するときは、先に内容を説明して確認をとる
 
 ## 決まったこと（随時追記）
@@ -63,3 +66,4 @@
 - 2026-10-25：リポジトリ作成、このメモを追加
 - 2026-10-25：使う技術を決定（上の「使う技術」を参照）。最初に作る機能は体重の記録
 - 2026-10-25：体重の記録機能（入力・一覧・削除）を作成。同じ日付は1件だけ（上書き確認あり）
+- 2026-10-25：公開方法を Cloudflare Pages から GitHub Pages（リポジトリを Public）に変更
