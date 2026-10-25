@@ -84,6 +84,18 @@ button {
   cursor: pointer;
 }
 
+/* iPhone の Safari では日付の入力欄が枠からはみ出し、文字が中央寄せになるので直す */
+input[type='date'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+}
+
+input[type='date']::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 .primary {
   width: 100%;
   background: var(--accent);
