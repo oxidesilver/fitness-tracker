@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { formatDate, today } from '../../storage.js'
-import { addWorkout, deleteWorkout, exerciseNames, loadWorkouts } from './workoutStorage.js'
+import ExercisePicker from './ExercisePicker.jsx'
+import SetEditor from './SetEditor.jsx'
+import { addExercise, addWorkout, deleteWorkout, lastWorkout, loadExercises, loadWorkouts } from './workoutStorage.js'
 import './workout.css'
 
-// 1件分の表示：'60 kg × 10回 × 3セット'
-function describe(r) {
-  const weight = r.weightKg === null ? '自重' : `${r.weightKg} kg`
-  return `${weight} × ${r.reps}回 × ${r.sets}セット`
+const EMPTY_SET = { weight: '', reps: '' }
+
+// 1セット分の表示：'55kg×10' または '自重×10'
+function describeSet(s) {
+  return `${s.weightKg === null ? '自重' : `${s.weightKg}kg`}×${s.reps}`
 }
 
 // 記録を日付ごとにまとめる：[['2026-10-25', [記録, 記録]], ...]
@@ -21,34 +24,52 @@ function groupByDate(records) {
 
 export default function WorkoutPage() {
   const [records, setRecords] = useState(loadWorkouts)
+  const [exercises, setExercises] = useState(() => loadExercises(loadWorkouts()))
   const [date, setDate] = useState(today)
   const [exercise, setExercise] = useState('')
-  const [weight, setWeight] = useState('')
-  const [reps, setReps] = useState('')
-  const [sets, setSets] = useState('1')
+  const [sets, setSets] = useState([EMPTY_SET])
   const [error, setError] = useState('')
   const [saved, setSaved] = useState('')
 
+  // 種目を選んだら、前回のその種目のセットを最初から入れておく
+  function selectExercise(name) {
+    setExercise(name)
+    setError('')
+    setSaved('')
+    const last = name && lastWorkout(records, name)
+    setSets(last ? last.sets.map((s) => ({ weight: s.weightKg === null ? '' : String(s.weightKg), reps: String(s.reps) })) : [EMPTY_SET])
+  }
+
+  function handleAddExercise(name) {
+    addExercise(name)
+    setExercises(loadExercises(records))
+    selectExercise(name)
+  }
+
   function handleSubmit(e) {
     e.preventDefault()
-    const name = exercise.trim()
-    const weightKg = weight === '' ? null : Number(weight)
-    const repsNum = Number(reps)
-    const setsNum = Number(sets)
     if (!date) return setError('日付を入れてください')
-    if (!name) return setError('種目を入れてください（例：ベンチプレス）')
-    if (weightKg !== null && !(weightKg >= 0 && weightKg < 1000)) return setError('重さを正しく入れてください（自重なら空のまま）')
-    if (!(Number.isInteger(repsNum) && repsNum > 0)) return setError('回数を入れてください（例：10）')
-    if (!(Number.isInteger(setsNum) && setsNum > 0)) return setError('セット数を入れてください（例：3）')
+    if (!exercise) return setError('種目を選んでください')
+    const parsed = []
+    for (const [i, s] of sets.entries()) {
+      const weightKg = s.weight.trim() === '' ? null : Number(s.weight)
+      const reps = Number(s.reps)
+      if (weightKg !== null && !(weightKg >= 0 && weightKg < 1000)) return setError(`${i + 1}セット目の重さを正しく入れてください（自重なら空のまま）`)
+      if (!(Number.isInteger(reps) && reps > 0)) return setError(`${i + 1}セット目の回数を入れてください`)
+      parsed.push({ weightKg, reps })
+    }
 
-    setRecords(addWorkout({ date, exercise: name, weightKg, reps: repsNum, sets: setsNum }))
+    const next = addWorkout({ date, exercise, sets: parsed })
+    setRecords(next)
+    setExercises(loadExercises(next))
+    setSaved(`${exercise}（${parsed.length}セット）を記録しました`)
     setError('')
-    // 同じ種目を続けて入れやすいように、入力欄はそのまま残す
-    setSaved(`${name} を記録しました`)
+    setExercise('')
+    setSets([EMPTY_SET])
   }
 
   function handleDelete(record) {
-    if (confirm(`${formatDate(record.date)}の「${record.exercise} ${describe(record)}」を消しますか？`)) {
+    if (confirm(`${formatDate(record.date)}の「${record.exercise}」を消しますか？`)) {
       setRecords(deleteWorkout(record.id))
     }
   }
@@ -61,33 +82,10 @@ export default function WorkoutPage() {
         <label htmlFor="workout-date">日付</label>
         <input id="workout-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
 
-        <label htmlFor="workout-exercise">種目</label>
-        <input
-          id="workout-exercise"
-          type="text"
-          list="workout-exercise-names"
-          placeholder="例：ベンチプレス"
-          value={exercise}
-          onChange={(e) => { setExercise(e.target.value); setSaved('') }}
-        />
-        <datalist id="workout-exercise-names">
-          {exerciseNames(records).map((n) => <option key={n} value={n} />)}
-        </datalist>
+        <label>種目</label>
+        <ExercisePicker exercises={exercises} selected={exercise} onSelect={selectExercise} onAdd={handleAddExercise} />
 
-        <div className="workout-numbers">
-          <div>
-            <label htmlFor="workout-weight">重さ（kg）</label>
-            <input id="workout-weight" type="number" inputMode="decimal" step="0.5" placeholder="自重は空" value={weight} onChange={(e) => { setWeight(e.target.value); setSaved('') }} />
-          </div>
-          <div>
-            <label htmlFor="workout-reps">回数</label>
-            <input id="workout-reps" type="number" inputMode="numeric" placeholder="10" value={reps} onChange={(e) => { setReps(e.target.value); setSaved('') }} />
-          </div>
-          <div>
-            <label htmlFor="workout-sets">セット</label>
-            <input id="workout-sets" type="number" inputMode="numeric" value={sets} onChange={(e) => { setSets(e.target.value); setSaved('') }} />
-          </div>
-        </div>
+        {exercise && <SetEditor sets={sets} onChange={setSets} />}
 
         {error && <p className="error">{error}</p>}
         {saved && <p className="workout-saved">✓ {saved}</p>}
@@ -106,7 +104,7 @@ export default function WorkoutPage() {
                 <li key={r.id}>
                   <div className="workout-item">
                     <span className="workout-name">{r.exercise}</span>
-                    <span className="workout-detail">{describe(r)}</span>
+                    <span className="workout-detail">{r.sets.map(describeSet).join(' / ')}</span>
                   </div>
                   <button type="button" className="workout-delete" onClick={() => handleDelete(r)}>
                     消す
