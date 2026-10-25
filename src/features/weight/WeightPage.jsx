@@ -1,20 +1,7 @@
 import { useState } from 'react'
+import { formatDate, today } from '../../storage.js'
 import { addWeight, deleteWeight, loadWeights } from './weightStorage.js'
 import './weight.css'
-
-// 今日の日付を '2026-10-25' の形で返す（スマホの時計の日付）
-function today() {
-  const d = new Date()
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
-
-// '2026-10-25' を '2026年10月25日（土）' の形にする
-function formatDate(date) {
-  const [y, m, d] = date.split('-').map(Number)
-  const week = '日月火水木金土'[new Date(y, m - 1, d).getDay()]
-  return `${y}年${m}月${d}日（${week}）`
-}
 
 export default function WeightPage() {
   const [records, setRecords] = useState(loadWeights)

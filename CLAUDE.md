@@ -49,10 +49,13 @@
 
 ## ファイルの置き場所
 
-- `src/App.jsx`：アプリ全体の入れ物
+- `src/App.jsx`：アプリ全体の入れ物。下のタブに出す画面の一覧（`TABS`）もここにある。新しい機能を作ったら1行足す
+- `src/storage.js`：記録の保存・読み込みと日付の表示など、各機能で共通の処理
+- `src/components/`：いくつもの画面で使う部品（`TabBar.jsx`：画面下のタブ）
 - `src/index.css`：アプリ全体の見た目
 - `src/features/<機能名>/`：機能ごとのフォルダ。画面（`〜Page.jsx`）、保存処理（`〜Storage.js`）、見た目（`〜.css`）を分けて置く
   - `src/features/weight/`：体重の記録
+  - `src/features/workout/`：筋トレの記録（1日に何件でも記録できる。重さが空なら自重）
 - 記録の保存は今のところ localStorage（ブラウザの中の小さな保存場所）を使う。保存処理は `〜Storage.js` にまとめてあるので、変えるときはそこだけ直す
   - https://developer.mozilla.org/ja/docs/Web/API/Window/localStorage
 
@@ -69,3 +72,4 @@
 - 2026-10-25：使う技術を決定（上の「使う技術」を参照）。最初に作る機能は体重の記録
 - 2026-10-25：体重の記録機能（入力・一覧・削除）を作成。同じ日付は1件だけ（上書き確認あり）
 - 2026-10-25：公開方法を Cloudflare Pages から GitHub Pages（リポジトリを Public）に変更
+- 2026-10-25：筋トレの記録機能（日付・種目・重さ・回数・セット数）と、画面下のタブを追加
