@@ -1,0 +1,98 @@
+/* アプリ全体の見た目（スマホ優先） */
+:root {
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --text: #1d1d1f;
+  --sub: #6e6e73;
+  --accent: #0a84ff;
+  --danger: #ff3b30;
+  --border: #d2d2d7;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --card: #1c1c1e;
+    --text: #f5f5f7;
+    --sub: #98989d;
+    --border: #38383a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+  font-size: 17px;
+  -webkit-text-size-adjust: 100%;
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+h1 {
+  font-size: 28px;
+  margin: 8px 0 16px;
+}
+
+h2 {
+  font-size: 20px;
+  margin: 24px 0 8px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+label {
+  display: block;
+  font-size: 15px;
+  color: var(--sub);
+  margin-bottom: 6px;
+}
+
+/* iPhone は文字が16px未満だと入力時に画面が拡大されるので、17px にする */
+input {
+  width: 100%;
+  font-size: 17px;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+button {
+  font-size: 17px;
+  min-height: 48px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.primary {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.error {
+  color: var(--danger);
+  font-size: 15px;
+  margin: -8px 0 12px;
+}

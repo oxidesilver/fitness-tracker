@@ -44,6 +44,15 @@
   - 公開したURLを知っている人は開けるが、記録は各自のブラウザの中にあるので他人には見えない
 - 開発者のスマホは **iPhone**。動作確認は iPhone の Safari を基準にする
 
+## ファイルの置き場所
+
+- `src/App.jsx`：アプリ全体の入れ物
+- `src/index.css`：アプリ全体の見た目
+- `src/features/<機能名>/`：機能ごとのフォルダ。画面（`〜Page.jsx`）、保存処理（`〜Storage.js`）、見た目（`〜.css`）を分けて置く
+  - `src/features/weight/`：体重の記録
+- 記録の保存は今のところ localStorage（ブラウザの中の小さな保存場所）を使う。保存処理は `〜Storage.js` にまとめてあるので、変えるときはそこだけ直す
+  - https://developer.mozilla.org/ja/docs/Web/API/Window/localStorage
+
 ## GitHub での作業
 
 - リポジトリ：`oxidesilver/fitness-tracker`（Private）
@@ -53,3 +62,4 @@
 
 - 2026-10-25：リポジトリ作成、このメモを追加
 - 2026-10-25：使う技術を決定（上の「使う技術」を参照）。最初に作る機能は体重の記録
+- 2026-10-25：体重の記録機能（入力・一覧・削除）を作成。同じ日付は1件だけ（上書き確認あり）
