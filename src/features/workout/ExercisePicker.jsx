@@ -1,9 +1,21 @@
 import { useState } from 'react'
 
-// 種目をボタンで選ぶ部品。一覧にない種目は「＋ 新しい種目」から追加する。
+const NEW_OPTION = '__new__'
+
+// 種目をプルダウンで選ぶ部品。一覧にない種目は「＋ 新しい種目を追加」から追加する。
 export default function ExercisePicker({ exercises, selected, onSelect, onAdd }) {
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
+
+  function handleChange(e) {
+    if (e.target.value === NEW_OPTION) {
+      setAdding(true)
+      onSelect('')
+    } else {
+      setAdding(false)
+      onSelect(e.target.value)
+    }
+  }
 
   function handleAdd() {
     const trimmed = name.trim()
@@ -15,23 +27,13 @@ export default function ExercisePicker({ exercises, selected, onSelect, onAdd })
 
   return (
     <div className="picker">
-      <div className="picker-chips">
+      <select id="workout-exercise" value={adding ? NEW_OPTION : selected} onChange={handleChange}>
+        <option value="" disabled>種目を選んでください</option>
         {exercises.map((n) => (
-          <button
-            key={n}
-            type="button"
-            className={n === selected ? 'chip active' : 'chip'}
-            onClick={() => onSelect(n === selected ? '' : n)}
-          >
-            {n}
-          </button>
+          <option key={n} value={n}>{n}</option>
         ))}
-        {!adding && (
-          <button type="button" className="chip chip-add" onClick={() => setAdding(true)}>
-            ＋ 新しい種目
-          </button>
-        )}
-      </div>
+        <option value={NEW_OPTION}>＋ 新しい種目を追加</option>
+      </select>
       {adding && (
         <div className="picker-add">
           <input
