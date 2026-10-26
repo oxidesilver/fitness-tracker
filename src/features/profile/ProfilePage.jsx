@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { today } from '../../storage.js'
+import GoalSection from '../goal/GoalSection.jsx'
 import { loadWeights } from '../weight/weightStorage.js'
 import { ACTIVITY_LEVELS, ageOn, basalMetabolism, dailyEnergy } from './energy.js'
 import { loadProfile, saveProfile } from './profileStorage.js'
@@ -102,6 +103,8 @@ export default function ProfilePage() {
         <p className="profile-missing">計算するには、次を入れてください：{missing.join('、')}</p>
       )}
       <p className="profile-note">数字は計算式による目安です。</p>
+
+      <GoalSection energy={input && { basal: basalMetabolism(input), daily: dailyEnergy(input), weightKg: input.weightKg }} />
     </section>
   )
 }

@@ -1,3 +1,5 @@
+import './Stepper.css'
+
 // 数字を「−」「＋」ボタンと入力欄で入れる部品。
 // 値は入力中の文字のまま（'55' や ''）で持つ。
 export default function Stepper({ value, onChange, step, unit, placeholder, inputMode = 'decimal', label }) {

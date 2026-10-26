@@ -1,0 +1,79 @@
+/* 目標の部分だけで使う見た目 */
+.goal-help {
+  font-size: 13px;
+  color: var(--sub);
+  margin: 6px 0 16px;
+}
+
+.goal-gap {
+  margin-top: 12px;
+}
+
+.goal-problem {
+  color: var(--sub);
+}
+
+.goal-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-summary div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.goal-summary strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.goal-summary .goal-intake {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+/* 単位（kg・g/kg・g）の幅をそろえて、入力欄の幅を同じにする */
+.goal-form .stepper-unit {
+  width: 36px;
+}
+
+.goal-warning {
+  font-size: 14px;
+  color: var(--danger);
+  margin: 0 0 12px;
+}
+
+.goal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.goal-table th,
+.goal-table td {
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+}
+
+.goal-table thead th {
+  font-size: 13px;
+  color: var(--sub);
+  font-weight: 600;
+}
+
+.goal-table tbody th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.goal-form .stepper + label {
+  margin-top: 12px;
+}

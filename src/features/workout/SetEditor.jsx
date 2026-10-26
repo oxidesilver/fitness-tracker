@@ -1,4 +1,4 @@
-import Stepper from './Stepper.jsx'
+import Stepper from '../../components/Stepper.jsx'
 
 // 1セットずつ重さと回数を入れる部品。
 // 値は入力中の文字のまま（'55' や ''）で持ち、記録するときに数字に直す。
