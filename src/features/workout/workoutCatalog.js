@@ -50,6 +50,8 @@ const STRENGTH = [
     { name: 'アダクション・アブダクション（マシン）', equipment: 'machine', ratio: 0.25 },
     { name: 'カーフレイズ', equipment: 'bodyweight' },
     { name: '自重スクワット', equipment: 'bodyweight' },
+    { name: '自重ランジ', equipment: 'bodyweight' },
+    { name: 'ヒップリフト', equipment: 'bodyweight' },
   ] },
   { group: '肩', items: [
     { name: 'ショルダープレス', equipment: 'machine', ratio: 0.2 },

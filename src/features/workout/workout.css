@@ -360,3 +360,15 @@
   border-radius: 2px;
   background: var(--accent);
 }
+
+.recommend-badge {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.segment.recommend-place button {
+  min-height: 44px;
+  line-height: 1.2;
+}

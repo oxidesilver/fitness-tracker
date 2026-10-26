@@ -5,6 +5,10 @@
 // - 1つの種目は「10回前後（8〜12回）で限界になる重さ」で3セット
 //   参考：ACSM 2009年の指針（初心者は8〜12回で限界になる重さ）https://sfu.ca/~ryand/kin343/ACSMresistance.pdf
 // - 1種目の時間は、準備と軽い1セット2分＋3セット（各1分）＋セットの間の休み1.5分×2 ＝ 約8分
+// - 全身法と分割法：週の量が同じなら、筋肉の増え方や強さの伸びにほぼ差はない
+//   参考：Ramos-Campo ら 2024年 https://doi.org/10.1519/JSC.0000000000004774
+//   ただし同じ筋肉は週2回鍛える方がよい（Schoenfeld ら 2016年 https://pubmed.ncbi.nlm.nih.gov/27102172/ ）ので、
+//   週3回までは全身法、週4回からは上半身と下半身の2分割をおすすめにする
 import { exerciseKcal } from '../goal/exercisePlan.js'
 import { startingWeight, workoutInfo, EQUIPMENT } from './workoutCatalog.js'
 import { lastWorkout } from './workoutStorage.js'
@@ -15,9 +19,46 @@ export const PLACES = [
 ]
 
 // 鍛える場所の順番（大きな筋肉から）。ジムははじめてでも安全なマシン中心、自宅は器具なし
+// full：全身法、upper：分割法の上半身の日、lower：分割法の下半身の日
 const MENUS = {
-  gym: ['レッグプレス', 'チェストプレス（マシン）', 'ラットプルダウン', 'ショルダープレス', 'アブドミナル（マシン）', 'シーテッドロウ（マシン）'],
-  home: ['自重スクワット', '腕立て伏せ', 'バックエクステンション', '腹筋（クランチ）', 'カーフレイズ', 'レッグレイズ'],
+  gym: {
+    full: ['レッグプレス', 'チェストプレス（マシン）', 'ラットプルダウン', 'ショルダープレス', 'アブドミナル（マシン）', 'シーテッドロウ（マシン）'],
+    upper: ['チェストプレス（マシン）', 'ラットプルダウン', 'ショルダープレス', 'シーテッドロウ（マシン）', 'ペックフライ（マシン）', 'トライセプスプッシュダウン', 'ダンベルカール'],
+    lower: ['レッグプレス', 'レッグカール', 'レッグエクステンション', 'アダクション・アブダクション（マシン）', 'アブドミナル（マシン）', 'カーフレイズ'],
+  },
+  home: {
+    full: ['自重スクワット', '腕立て伏せ', 'バックエクステンション', '腹筋（クランチ）', 'カーフレイズ', 'レッグレイズ'],
+    upper: ['腕立て伏せ', 'バックエクステンション', '腹筋（クランチ）', 'レッグレイズ'],
+    lower: ['自重スクワット', '自重ランジ', 'ヒップリフト', 'カーフレイズ'],
+  },
+}
+
+export const STYLES = [
+  { id: 'full', label: '全身法' },
+  { id: 'split', label: '分割法' },
+]
+
+export const SPLIT_DAYS = [
+  { id: 'upper', label: '上半身の日' },
+  { id: 'lower', label: '下半身の日' },
+]
+
+// 週の回数からおすすめのやり方：週3回までは全身法、4回からは分割法
+export function recommendedStyle(sessionsPerWeek) {
+  return Number(sessionsPerWeek) >= 4 ? 'split' : 'full'
+}
+
+const LOWER_MUSCLES = ['quads', 'hamstrings', 'glutes', 'calves']
+
+// 分割法で次にやる日：いちばん最近に筋トレした日が下半身中心なら上半身、そうでなければ下半身
+// guide は workoutGuide.js の GUIDE
+export function nextSplitDay(records, guide) {
+  const strength = records.filter((r) => r.sets && guide[r.exercise])
+  if (strength.length === 0) return 'upper'
+  const lastDate = strength.reduce((d, r) => (r.date > d ? r.date : d), '')
+  const day = strength.filter((r) => r.date === lastDate)
+  const lower = day.filter((r) => guide[r.exercise].muscles.some((m) => LOWER_MUSCLES.includes(m)) && !guide[r.exercise].muscles.some((m) => ['chest', 'back', 'shoulders', 'biceps', 'triceps'].includes(m))).length
+  return lower > day.length / 2 ? 'upper' : 'lower'
 }
 
 export const SETS = 3
@@ -32,9 +73,11 @@ export function strengthMinutes(exercisePlan, bodyKg) {
 }
 
 // おすすめメニュー：[{ name, weight: '22.5'（自重は ''）, bodyweight, sets, minutes }]
-export function recommendMenu({ place, minutes, records, bodyKg, sex }) {
-  const count = Math.min(MENUS[place].length, Math.max(2, Math.floor(minutes / MINUTES_PER_EXERCISE)))
-  return MENUS[place].slice(0, count).map((name) => {
+// day は 'full'・'upper'・'lower'
+export function recommendMenu({ place, day, minutes, records, bodyKg, sex }) {
+  const list = MENUS[place][day]
+  const count = Math.min(list.length, Math.max(2, Math.floor(minutes / MINUTES_PER_EXERCISE)))
+  return list.slice(0, count).map((name) => {
     const info = workoutInfo(name)
     const last = lastWorkout(records, name)
     const lastWeight = last?.sets?.[0]?.weightKg
