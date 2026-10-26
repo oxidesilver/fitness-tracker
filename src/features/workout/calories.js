@@ -4,7 +4,7 @@
 
 // 筋トレ：「複数の種目を8〜15回、さまざまな重さで行う」の値（3.5 METs）
 // 参考：https://pacompendium.com/conditioning-exercise （コード 02054）
-const STRENGTH_METS = 3.5
+export const STRENGTH_METS = 3.5
 // 筋トレは時間を記録していないので、1セット＝休憩込みで約3分とみなす
 const MINUTES_PER_SET = 3
 
@@ -15,7 +15,7 @@ function kcal(mets, bodyKg, minutes) {
 // ランニング・ウォーキングの METs を速度と傾斜から求める（ACSM の計算式）
 // 参考：https://pmc.ncbi.nlm.nih.gov/articles/PMC3743617/
 // 時速8km未満は歩きの式、8km以上は走りの式を使う
-function runMets(speedKmh, inclinePct) {
+export function runMets(speedKmh, inclinePct) {
   const speed = (speedKmh * 1000) / 60 // 分速（m）
   const grade = inclinePct / 100
   const vo2 = speedKmh < 8 ? 0.1 * speed + 1.8 * speed * grade + 3.5 : 0.2 * speed + 0.9 * speed * grade + 3.5

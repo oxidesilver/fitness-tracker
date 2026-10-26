@@ -22,10 +22,12 @@ export function daysBetween(from, to) {
 
 // 目標から1日の目標摂取カロリーを出す
 // 戻り値：{ intake, deficit, weeklyKg, weeklyPercent }
-export function intakePlan({ dailyEnergy, loseKg, days, weightKg }) {
+// exerciseDaily は運動の計画で1日あたりに使うカロリー。運動した分だけ食べてよい量が増える
+// （食べる量 −（消費カロリー＋運動）＝ −減らす量 になるようにする）
+export function intakePlan({ dailyEnergy, loseKg, days, weightKg, exerciseDaily = 0 }) {
   const deficit = loseKg > 0 ? (loseKg * KCAL_PER_KG_FAT) / days : 0
   const weeklyKg = loseKg > 0 ? (loseKg / days) * 7 : 0
-  return { intake: dailyEnergy - deficit, deficit, weeklyKg, weeklyPercent: (weeklyKg / weightKg) * 100 }
+  return { intake: dailyEnergy - deficit + exerciseDaily, deficit, weeklyKg, weeklyPercent: (weeklyKg / weightKg) * 100 }
 }
 
 // PFC のグラム数を出す
@@ -46,8 +48,9 @@ export function pfcGrams({ intake, mode, weightKg, proteinPerKg, fatG }) {
 
 // 目標の入力から、目標摂取カロリーと PFC をまとめて出す。
 // energy は energyFromProfile の戻り値。goal は goalStorage の形。date は今日の日付
+// exerciseDaily は運動の計画で1日あたりに使うカロリー（なければ 0）
 // 戻り値：{ problem: 計算できない理由（なければ null）, loseKg, days, plan, pfc }
-export function goalPlan(energy, goal, date) {
+export function goalPlan(energy, goal, date, exerciseDaily = 0) {
   const loseKg = goal.loseKg.trim() === '' ? 0 : Number(goal.loseKg)
   const days = goal.targetDate ? daysBetween(date, goal.targetDate) : null
   const proteinPerKg = Number(goal.proteinPerKg)
@@ -61,7 +64,7 @@ export function goalPlan(energy, goal, date) {
   else if (goal.pfcMode === 'body' && !(proteinPerKg > 0 && fatG > 0)) problem = 'たんぱく質と脂質の量を入れてください'
   if (problem) return { problem, loseKg, days, plan: null, pfc: null }
 
-  const plan = intakePlan({ dailyEnergy: energy.daily, loseKg, days, weightKg: energy.weightKg })
+  const plan = intakePlan({ dailyEnergy: energy.daily, loseKg, days, weightKg: energy.weightKg, exerciseDaily })
   const pfc = pfcGrams({ intake: plan.intake, mode: goal.pfcMode, weightKg: energy.weightKg, proteinPerKg, fatG })
   return { problem, loseKg, days, plan, pfc }
 }

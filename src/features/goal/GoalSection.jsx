@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import Stepper from '../../components/Stepper.jsx'
 import { formatDate, today } from '../../storage.js'
+import ExercisePlanSection from './ExercisePlanSection.jsx'
+import { exerciseKcal, loadExercisePlan, saveExercisePlan } from './exercisePlan.js'
 import { loadGoal, saveGoal } from './goalStorage.js'
 import { goalPlan } from './nutrition.js'
 import './goal.css'
@@ -9,8 +11,9 @@ const round = (n) => Math.round(n)
 
 // 目標の入力と、1日・1食あたりの目標摂取カロリーと PFC の表示。
 // プロフィールの画面の下に出す。energy は energyFromProfile の戻り値
-export default function GoalSection({ energy }) {
+export default function GoalSection({ energy, activity }) {
   const [goal, setGoal] = useState(loadGoal)
+  const [exercisePlan, setExercisePlan] = useState(loadExercisePlan)
 
   // 入力するたびに自動で保存する
   function update(field, value) {
@@ -19,7 +22,13 @@ export default function GoalSection({ energy }) {
     saveGoal(next)
   }
 
-  const { problem, loseKg, days, plan, pfc } = goalPlan(energy, goal, today())
+  function updateExercisePlan(next) {
+    setExercisePlan(next)
+    saveExercisePlan(next)
+  }
+
+  const exercise = exerciseKcal(exercisePlan, energy.weightKg)
+  const { problem, loseKg, days, plan, pfc } = goalPlan(energy, goal, today(), exercise?.daily ?? 0)
 
   const warnings = []
   if (plan && plan.weeklyPercent > 1) {
@@ -74,6 +83,14 @@ export default function GoalSection({ energy }) {
         )}
       </div>
 
+      <ExercisePlanSection
+        plan={exercisePlan}
+        onChange={updateExercisePlan}
+        result={exercise}
+        deficit={plan?.deficit ?? 0}
+        activity={activity}
+      />
+
       <h2>1日の目標</h2>
       {problem ? (
         <p className="goal-problem">{problem}</p>
@@ -84,6 +101,18 @@ export default function GoalSection({ energy }) {
               <span>消費カロリー</span>
               <strong>約 {round(energy.daily).toLocaleString()} kcal</strong>
             </div>
+            {exercise && (
+              <div>
+                <span>運動の分（1日あたり）</span>
+                <strong>＋ 約 {round(exercise.daily).toLocaleString()} kcal</strong>
+              </div>
+            )}
+            {loseKg > 0 && (
+              <div>
+                <span>減らす分</span>
+                <strong>− 約 {round(plan.deficit).toLocaleString()} kcal</strong>
+              </div>
+            )}
             <div>
               <span>目標摂取カロリー</span>
               <strong className="goal-intake">約 {round(plan.intake).toLocaleString()} kcal</strong>
