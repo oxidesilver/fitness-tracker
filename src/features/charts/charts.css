@@ -1,0 +1,193 @@
+/* グラフの画面だけで使う見た目 */
+.segment.chart-range {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 16px;
+}
+
+.chart-empty {
+  color: var(--sub);
+}
+
+/* 数字のタイル（最新・期間の変化・目標まで） */
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: var(--card);
+  border-radius: 14px;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--sub);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.stat-value small {
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 2px;
+  color: var(--sub);
+}
+
+.stat-sub {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.chart-card h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+/* 折れ線グラフ */
+.line-chart {
+  position: relative;
+  width: 100%;
+}
+
+.line-chart svg {
+  display: block;
+  /* 横に指でなぞるとグラフの値を出し、縦に動かすと画面をスクロールする */
+  touch-action: pan-y;
+  outline: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.line-chart svg:focus-visible {
+  outline: 2px solid var(--accent);
+  border-radius: 6px;
+}
+
+.chart-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.chart-axis {
+  fill: var(--sub);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* 点のまわりにカードの色のふちを付けて、線と重なっても見えるようにする */
+.chart-dot {
+  fill: var(--accent);
+  stroke: var(--card);
+  stroke-width: 2;
+}
+
+.chart-dot-active {
+  stroke-width: 3;
+}
+
+.chart-end-label {
+  fill: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-reference {
+  stroke: var(--sub);
+  stroke-width: 1;
+  opacity: 0.7;
+}
+
+.chart-reference-label {
+  fill: var(--sub);
+  font-size: 11px;
+  /* 目盛りの線と重なっても読めるよう、文字のまわりをカードの色でふちどる */
+  paint-order: stroke;
+  stroke: var(--card);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.chart-crosshair {
+  stroke: var(--sub);
+  stroke-width: 1;
+}
+
+.chart-tooltip {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.chart-tooltip strong {
+  font-size: 17px;
+}
+
+.chart-tooltip span {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.chart-hint {
+  font-size: 12px;
+  color: var(--sub);
+  margin: 4px 0 8px;
+}
+
+.chart-table summary {
+  font-size: 15px;
+  color: var(--accent);
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.chart-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-table th,
+.chart-table td {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-table th {
+  text-align: left;
+  font-weight: 400;
+  color: var(--sub);
+}
+
+.chart-table td {
+  text-align: right;
+}
