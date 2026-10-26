@@ -84,56 +84,50 @@
   margin-top: 12px;
 }
 
-/* 運動の計画 */
-.plan-options {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+/* 運動の計画：選んだ種目と強さ */
+.plan-items-edit {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
 }
 
-.plan-option-row {
-  display: flex;
-  gap: 6px;
+.plan-items-edit li {
+  padding: 8px 0 10px;
+  border-bottom: 1px solid var(--border);
 }
 
-.plan-option {
-  flex: 1;
+.plan-item-head {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  text-align: left;
+}
+
+.plan-level-select,
+.plan-add-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   background: var(--bg);
   color: var(--text);
-  border: 1px solid var(--border);
 }
 
-.plan-option.active {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+.plan-add-select {
+  margin: 4px 0 8px;
+  color: var(--accent);
+  border: 1px dashed var(--accent);
 }
 
-.plan-check {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 14px;
+.plan-one-level {
+  margin: 0;
 }
 
-.plan-option.active .plan-check {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.plan-level {
+.plan-item-level {
+  display: block;
+  font-size: 12px;
   color: var(--sub);
-  font-size: 14px;
 }
 
 .plan-remove {
@@ -141,28 +135,6 @@
   width: 44px;
   background: transparent;
   color: var(--sub);
-}
-
-.plan-add-open {
-  width: 100%;
-  background: transparent;
-  color: var(--accent);
-  border: 1px dashed var(--accent);
-}
-
-.plan-add-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.plan-add-buttons .primary {
-  flex: 1;
-}
-
-.plan-cancel {
-  background: transparent;
-  color: var(--sub);
-  padding: 0 12px;
 }
 
 .segment.segment-3 {
