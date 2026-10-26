@@ -9,18 +9,22 @@ import LineChart from './LineChart.jsx'
 // 重りを使う種目：その日いちばん重かった重さ（kg）
 // 自重の種目：その日いちばん多かった回数
 // ランニング：その日に走った距離の合計（km）
+// 有酸素・スポーツ（時間で記録）：その日に運動した時間の合計（分）
 function dailyValues(records) {
   const isRun = records.some((r) => r.run)
-  const usesWeight = !isRun && records.some((r) => r.sets.some((s) => s.weightKg !== null))
+  const isCardio = records.some((r) => r.cardio)
+  const usesWeight = !isRun && !isCardio && records.some((r) => r.sets.some((s) => s.weightKg !== null))
   const byDate = new Map()
   for (const r of records) {
     let v
-    if (isRun) v = (byDate.get(r.date) ?? 0) + r.run.distanceKm
+    if (isCardio) v = (byDate.get(r.date) ?? 0) + (r.cardio?.minutes ?? 0)
+    else if (isRun) v = (byDate.get(r.date) ?? 0) + r.run.distanceKm
     else if (usesWeight) v = Math.max(byDate.get(r.date) ?? 0, ...r.sets.map((s) => s.weightKg ?? 0))
     else v = Math.max(byDate.get(r.date) ?? 0, ...r.sets.map((s) => s.reps))
     byDate.set(r.date, v)
   }
   const points = [...byDate].map(([date, value]) => ({ date, value: Math.round(value * 10) / 10 })).sort((a, b) => a.date.localeCompare(b.date))
+  if (isCardio) return { points, unit: '分', what: 'その日に運動した時間', title: '時間（分）' }
   if (isRun) return { points, unit: 'km', what: 'その日に走った距離', title: '距離（km）' }
   if (usesWeight) return { points, unit: 'kg', what: 'その日いちばん重かった重さ', title: '重さ（kg）' }
   return { points, unit: '回', what: 'その日いちばん多かった回数', title: '回数（回）' }
