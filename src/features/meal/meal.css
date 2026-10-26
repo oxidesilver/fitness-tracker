@@ -245,3 +245,66 @@
 .food-source a {
   color: var(--sub);
 }
+
+/* 食品成分表・写真の2つのボタン */
+.helper-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.helper-buttons .food-open {
+  margin-bottom: 0;
+}
+
+/* 写真から入れる */
+.photo-step {
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+
+.food-search-head + .photo-step {
+  margin-top: 0;
+}
+
+.photo-prompt summary {
+  font-size: 14px;
+  color: var(--sub);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.photo-prompt textarea,
+.photo-answer {
+  width: 100%;
+  font-size: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+}
+
+.photo-paste {
+  width: 100%;
+  margin-bottom: 8px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.photo-answer {
+  margin-bottom: 12px;
+}
+
+.photo-note {
+  margin: 10px 0 0;
+}
+
+.food-search .primary:disabled {
+  opacity: 0.5;
+}

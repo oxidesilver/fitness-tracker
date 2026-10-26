@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { formatDate, today } from '../../storage.js'
 import { loadDailyTarget } from '../goal/target.js'
 import FoodSearch from './FoodSearch.jsx'
+import PhotoImport from './PhotoImport.jsx'
 import { MEAL_TIMES, addMeal, defaultMealTime, deleteMeal, frequentFoods, loadMeals } from './mealStorage.js'
 import './meal.css'
 
@@ -36,7 +37,8 @@ export default function MealPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState('')
-  const [searching, setSearching] = useState(false)
+  // 開いている入力の手伝い：'table'（食品成分表）・'photo'（写真）・null
+  const [helper, setHelper] = useState(null)
 
   const dayMeals = records.filter((r) => r.date === date)
   const total = sumOf(dayMeals)
@@ -56,11 +58,11 @@ export default function MealPage() {
     setSaved('')
   }
 
-  // 食品成分表で選んだ食品の名前と数字を入れる
-  function pickFromTable(food) {
+  // 食品成分表や写真から出した名前と数字を入れる
+  function pickFromHelper(food) {
     const text = (n) => (n === null ? '' : String(n))
     setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
-    setSearching(false)
+    setHelper(null)
     setSaved('')
   }
 
@@ -152,10 +154,13 @@ export default function MealPage() {
           </>
         )}
 
-        {searching ? (
-          <FoodSearch onPick={pickFromTable} onClose={() => setSearching(false)} />
-        ) : (
-          <button type="button" className="food-open" onClick={() => setSearching(true)}>🔍 食品成分表から探す</button>
+        {helper === 'table' && <FoodSearch onPick={pickFromHelper} onClose={() => setHelper(null)} />}
+        {helper === 'photo' && <PhotoImport onPick={pickFromHelper} onClose={() => setHelper(null)} />}
+        {helper === null && (
+          <div className="helper-buttons">
+            <button type="button" className="food-open" onClick={() => setHelper('table')}>🔍 食品成分表から</button>
+            <button type="button" className="food-open" onClick={() => setHelper('photo')}>📷 写真から</button>
+          </div>
         )}
 
         <label htmlFor="meal-name">何を食べたか</label>
@@ -179,7 +184,6 @@ export default function MealPage() {
             </div>
           ))}
         </div>
-        <p className="meal-help">写真から数字を知りたいときは、Claude アプリに写真を送って「カロリーとPFCを教えて」と聞く方法があります。</p>
 
         {error && <p className="error">{error}</p>}
         {saved && <p className="meal-saved">✓ {saved}</p>}
