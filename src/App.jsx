@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import TabBar from './components/TabBar.jsx'
+import MealPage from './features/meal/MealPage.jsx'
 import ProfilePage from './features/profile/ProfilePage.jsx'
 import WeightPage from './features/weight/WeightPage.jsx'
 import WorkoutPage from './features/workout/WorkoutPage.jsx'
@@ -7,6 +8,7 @@ import WorkoutPage from './features/workout/WorkoutPage.jsx'
 // 画面の一覧。新しい機能を作ったら、ここに1行足す。
 const TABS = [
   { id: 'workout', label: '筋トレ', icon: '💪', Page: WorkoutPage },
+  { id: 'meal', label: '食事', icon: '🍚', Page: MealPage },
   { id: 'weight', label: '体重', icon: '⚖️', Page: WeightPage },
   { id: 'profile', label: 'プロフィール', icon: '👤', Page: ProfilePage },
 ]

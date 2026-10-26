@@ -2,13 +2,13 @@ import { useState } from 'react'
 import Stepper from '../../components/Stepper.jsx'
 import { formatDate, today } from '../../storage.js'
 import { loadGoal, saveGoal } from './goalStorage.js'
-import { daysBetween, intakePlan, pfcGrams } from './nutrition.js'
+import { goalPlan } from './nutrition.js'
 import './goal.css'
 
 const round = (n) => Math.round(n)
 
 // 目標の入力と、1日・1食あたりの目標摂取カロリーと PFC の表示。
-// プロフィールの画面の下に出す。energy は { basal, daily, weightKg }（計算できないときは null）
+// プロフィールの画面の下に出す。energy は energyFromProfile の戻り値
 export default function GoalSection({ energy }) {
   const [goal, setGoal] = useState(loadGoal)
 
@@ -19,20 +19,7 @@ export default function GoalSection({ energy }) {
     saveGoal(next)
   }
 
-  const loseKg = goal.loseKg.trim() === '' ? 0 : Number(goal.loseKg)
-  const days = goal.targetDate ? daysBetween(today(), goal.targetDate) : null
-  const proteinPerKg = Number(goal.proteinPerKg)
-  const fatG = Number(goal.fatG)
-
-  let problem = null
-  if (!energy) problem = '上のプロフィールを入れると計算できます'
-  else if (!(loseKg >= 0 && loseKg < 100)) problem = '減らしたい体重を正しく入れてください'
-  else if (loseKg > 0 && !goal.targetDate) problem = 'いつまでに減らしたいか（日付）を入れてください'
-  else if (loseKg > 0 && days <= 0) problem = '目標の日付は明日以降にしてください'
-  else if (goal.pfcMode === 'body' && !(proteinPerKg > 0 && fatG > 0)) problem = 'たんぱく質と脂質の量を入れてください'
-
-  const plan = problem ? null : intakePlan({ dailyEnergy: energy.daily, loseKg, days, weightKg: energy.weightKg })
-  const pfc = plan ? pfcGrams({ intake: plan.intake, mode: goal.pfcMode, weightKg: energy.weightKg, proteinPerKg, fatG }) : null
+  const { problem, loseKg, days, plan, pfc } = goalPlan(energy, goal, today())
 
   const warnings = []
   if (plan && plan.weeklyPercent > 1) {
@@ -57,7 +44,7 @@ export default function GoalSection({ energy }) {
       <div className="card goal-form">
         <label>減らしたい体重（kg）</label>
         <Stepper label="減らしたい体重" value={goal.loseKg} onChange={(v) => update('loseKg', v)} step={0.5} unit="kg" placeholder="0" />
-        {energy && loseKg > 0 && (
+        {energy.weightKg !== null && loseKg > 0 && (
           <p className="goal-help">目標体重：約{(energy.weightKg - loseKg).toFixed(1)}kg</p>
         )}
 
