@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatDate, today } from '../../storage.js'
 import { loadDailyTarget } from '../goal/target.js'
+import FoodSearch from './FoodSearch.jsx'
 import { MEAL_TIMES, addMeal, defaultMealTime, deleteMeal, frequentFoods, loadMeals } from './mealStorage.js'
 import './meal.css'
 
@@ -35,6 +36,7 @@ export default function MealPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState('')
+  const [searching, setSearching] = useState(false)
 
   const dayMeals = records.filter((r) => r.date === date)
   const total = sumOf(dayMeals)
@@ -51,6 +53,14 @@ export default function MealPage() {
     if (!food) return
     const text = (n) => (n === null || n === undefined ? '' : String(n))
     setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
+    setSaved('')
+  }
+
+  // 食品成分表で選んだ食品の名前と数字を入れる
+  function pickFromTable(food) {
+    const text = (n) => (n === null ? '' : String(n))
+    setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
+    setSearching(false)
     setSaved('')
   }
 
@@ -140,6 +150,12 @@ export default function MealPage() {
               ))}
             </select>
           </>
+        )}
+
+        {searching ? (
+          <FoodSearch onPick={pickFromTable} onClose={() => setSearching(false)} />
+        ) : (
+          <button type="button" className="food-open" onClick={() => setSearching(true)}>🔍 食品成分表から探す</button>
         )}
 
         <label htmlFor="meal-name">何を食べたか</label>
