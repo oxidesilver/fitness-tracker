@@ -71,7 +71,13 @@
 .goal-table tbody th {
   text-align: left;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
+}
+
+.goal-table td small {
+  margin-left: 1px;
+  font-size: 11px;
+  color: var(--sub);
 }
 
 .goal-form .stepper + label {
