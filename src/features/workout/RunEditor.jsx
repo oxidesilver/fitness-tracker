@@ -1,4 +1,4 @@
-import Stepper from './Stepper.jsx'
+import Stepper from '../../components/Stepper.jsx'
 
 // ランニングの入力。マシン（速度・傾斜・時間）と、外（距離・時間）を切り替えられる。
 // 値は入力中の文字のまま持ち、記録するときに数字に直す。
