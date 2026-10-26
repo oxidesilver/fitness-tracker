@@ -154,3 +154,94 @@
   color: var(--danger);
   min-width: 56px;
 }
+
+/* 食品成分表から探す */
+.food-open {
+  width: 100%;
+  margin-bottom: 16px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+}
+
+.food-search {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+}
+
+.food-search-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.food-close,
+.food-back {
+  background: transparent;
+  color: var(--sub);
+  padding: 0 8px;
+}
+
+.food-results {
+  list-style: none;
+  margin: -8px 0 8px;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.food-results button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  text-align: left;
+  font-size: 15px;
+  background: transparent;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+}
+
+.food-kcal {
+  flex: none;
+  font-size: 13px;
+  color: var(--sub);
+}
+
+.food-picked {
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.food-values {
+  margin: 10px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.food-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.food-buttons .primary {
+  flex: 1;
+}
+
+.food-buttons .primary:disabled {
+  opacity: 0.5;
+}
+
+.food-source {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+
+.food-source a {
+  color: var(--sub);
+}
