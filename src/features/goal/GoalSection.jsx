@@ -4,14 +4,26 @@ import { formatDate, today } from '../../storage.js'
 import ExercisePlanSection from './ExercisePlanSection.jsx'
 import { exerciseKcal, loadExercisePlan, saveExercisePlan } from './exercisePlan.js'
 import { loadGoal, saveGoal } from './goalStorage.js'
-import { goalPlan, targetWeight } from './nutrition.js'
+import { daysBetween, goalPlan, suggestLoss, targetWeight } from './nutrition.js'
 import './goal.css'
 
 const round = (n) => Math.round(n)
 
+// 自動で決めた値か、自分で変えた値かを示す。自分で変えたときは「自動に戻す」を出す
+function AutoNote({ auto, text, onReset }) {
+  return auto ? (
+    <p className="goal-help">{text}。−／＋で変えられます。</p>
+  ) : (
+    <p className="goal-help">
+      自分で決めた値です。
+      <button type="button" className="goal-reset" onClick={onReset}>自動に戻す</button>
+    </p>
+  )
+}
+
 // 目標の入力と、1日・1食あたりの目標摂取カロリーと PFC の表示。
-// プロフィールの画面の下に出す。energy は energyFromProfile の戻り値
-export default function GoalSection({ energy, activity }) {
+// プロフィールの画面の下に出す。energy は energyFromProfile の戻り値、heightCm は身長（文字のまま）
+export default function GoalSection({ energy, activity, heightCm }) {
   const [goal, setGoal] = useState(loadGoal)
   const [exercisePlan, setExercisePlan] = useState(loadExercisePlan)
 
@@ -19,9 +31,13 @@ export default function GoalSection({ energy, activity }) {
   const currentKg = energy.weight?.weightKg ?? null
 
   function update(field, value) {
-    const next = { ...goal, [field]: value }
+    updateMany({ [field]: value })
+  }
+
+  function updateMany(fields) {
+    const next = { ...goal, ...fields }
     // 減らしたい体重を入れたときの体重を覚えておき、目標体重を固定する
-    if (field === 'loseKg' && currentKg !== null) next.startWeightKg = currentKg
+    if ('loseKg' in fields && currentKg !== null) next.startWeightKg = currentKg
     setGoal(next)
     saveGoal(next)
   }
@@ -38,7 +54,10 @@ export default function GoalSection({ energy, activity }) {
   }
 
   const exercise = exerciseKcal(exercisePlan, energy.weightKg)
-  const { problem, loseKg, targetKg, remainingKg, days, plan, pfc } = goalPlan(energy, goal, today(), exercise?.daily ?? 0)
+  const { problem, loseKg, targetKg, remainingKg, days, plan, pfc, proteinPerKg, fatG } = goalPlan(energy, goal, today(), exercise?.daily ?? 0)
+  const suggestion = goal.targetDate
+    ? suggestLoss({ currentKg, heightCm: Number(heightCm), days: daysBetween(today(), goal.targetDate) })
+    : null
 
   const warnings = []
   if (plan && plan.weeklyPercent > 1) {
@@ -61,6 +80,29 @@ export default function GoalSection({ energy, activity }) {
     <>
       <h2>目標</h2>
       <div className="card goal-form">
+        <label htmlFor="goal-date">いつまでに</label>
+        <input id="goal-date" type="date" value={goal.targetDate} onChange={(e) => update('targetDate', e.target.value)} />
+
+        {suggestion && (
+          <div className="goal-suggest">
+            <p className="goal-suggest-title">この日までのおすすめ（タップすると下に入ります）</p>
+            <button type="button" onClick={() => updateMany({ loseKg: String(suggestion.body), pfcMode: 'body' })}>
+              <span className="goal-suggest-name">体づくり向け</span>
+              <strong>約 {suggestion.body}kg</strong>
+              <span className="goal-suggest-desc">1週間に体重の約0.75%。筋肉を残しやすいペース</span>
+            </button>
+            <button type="button" onClick={() => updateMany({ loseKg: String(suggestion.gentle), pfcMode: 'national' })}>
+              <span className="goal-suggest-name">ゆっくり（国の目安）</span>
+              <strong>約 {suggestion.gentle}kg</strong>
+              <span className="goal-suggest-desc">1か月に約1kg。無理のないペース</span>
+            </button>
+            {suggestion.limited && (
+              <p className="goal-help">BMI 18.5（低体重の境目）を下回らないよう、少なめにしています。</p>
+            )}
+          </div>
+        )}
+        {!suggestion && currentKg === null && <p className="goal-help">体重を記録すると、おすすめの量が出ます。</p>}
+
         <label>減らしたい体重（kg）</label>
         <Stepper label="減らしたい体重" value={goal.loseKg} onChange={(v) => update('loseKg', v)} step={0.5} unit="kg" placeholder="0" />
         {currentKg !== null && targetWeight(goal, currentKg) !== null && (
@@ -69,9 +111,6 @@ export default function GoalSection({ energy, activity }) {
             {Math.max(0, currentKg - targetWeight(goal, currentKg)).toFixed(1)}kg）
           </p>
         )}
-
-        <label htmlFor="goal-date">いつまでに</label>
-        <input id="goal-date" type="date" value={goal.targetDate} onChange={(e) => update('targetDate', e.target.value)} />
 
         <label>PFC（たんぱく質・脂質・炭水化物）の決め方</label>
         <div className="segment">
@@ -86,10 +125,34 @@ export default function GoalSection({ energy, activity }) {
         {goal.pfcMode === 'body' ? (
           <>
             <label>たんぱく質（体重1kgあたり g）</label>
-            <Stepper label="たんぱく質" value={goal.proteinPerKg} onChange={(v) => update('proteinPerKg', v)} step={0.1} unit="g/kg" />
-            <label className="goal-gap">脂質（1日 g）</label>
-            <Stepper label="脂質" value={goal.fatG} onChange={(v) => update('fatG', v)} step={5} unit="g" />
-            <p className="goal-help goal-gap">炭水化物は、残りのカロリーから自動で決まります。</p>
+            <Stepper
+              label="たんぱく質"
+              value={goal.proteinPerKg}
+              onChange={(v) => update('proteinPerKg', v)}
+              step={0.1}
+              unit="g/kg"
+              placeholder={proteinPerKg !== null ? proteinPerKg.toFixed(1) : '2.0'}
+            />
+            <AutoNote
+              auto={goal.proteinPerKg === ''}
+              text={`自動：${proteinPerKg !== null ? proteinPerKg.toFixed(1) : '—'}g/kg（体重を減らすときは2.0、保つときは1.6）${proteinPerKg !== null && energy.weightKg ? `＝1日 約${round(proteinPerKg * energy.weightKg)}g` : ''}`}
+              onReset={() => update('proteinPerKg', '')}
+            />
+            <label>脂質（1日 g）</label>
+            <Stepper
+              label="脂質"
+              value={goal.fatG}
+              onChange={(v) => update('fatG', v)}
+              step={5}
+              unit="g"
+              placeholder={fatG !== null ? String(fatG) : '50'}
+            />
+            <AutoNote
+              auto={goal.fatG === ''}
+              text={`自動：${fatG !== null ? fatG : '—'}g（目標カロリーの約20%）`}
+              onReset={() => update('fatG', '')}
+            />
+            <p className="goal-help">炭水化物は、残りのカロリーから自動で決まります。</p>
           </>
         ) : (
           <p className="goal-help">カロリーのうち、たんぱく質15%・脂質25%・炭水化物60%で計算します（国の目安の範囲のおおよそ真ん中）。</p>

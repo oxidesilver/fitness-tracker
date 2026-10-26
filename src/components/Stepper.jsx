@@ -2,9 +2,10 @@ import './Stepper.css'
 
 // 数字を「−」「＋」ボタンと入力欄で入れる部品。
 // 値は入力中の文字のまま（'55' や ''）で持つ。
+// 空のときに −／＋ を押すと、見本の数字（placeholder）から増やす・減らす（見本が数字でなければ 0 から）。
 export default function Stepper({ value, onChange, step, unit, placeholder, inputMode = 'decimal', label }) {
   function bump(diff) {
-    const n = Number(value) || 0
+    const n = String(value).trim() === '' ? Number(placeholder) || 0 : Number(value) || 0
     const next = Math.max(0, Math.round((n + diff) * 10) / 10)
     onChange(String(next))
   }
