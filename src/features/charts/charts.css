@@ -191,3 +191,66 @@
 .chart-table td {
   text-align: right;
 }
+
+/* グラフのまとまりの見出し（体重・筋トレ） */
+.chart-section {
+  font-size: 20px;
+  margin: 24px 0 8px;
+}
+
+.segment.chart-range + .chart-section {
+  margin-top: 0;
+}
+
+.chart-card + .chart-card {
+  margin-top: 12px;
+}
+
+.chart-select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 17px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.chart-inline-stats {
+  font-size: 14px;
+  color: var(--sub);
+  margin-bottom: 4px;
+}
+
+.chart-inline-stats strong {
+  color: var(--text);
+  font-size: 17px;
+}
+
+/* 棒グラフ */
+.chart-bar {
+  fill: var(--accent);
+}
+
+.chart-bar-active {
+  opacity: 0.75;
+}
+
+.chart-bar-label {
+  fill: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 画面には出さず、読み上げのときだけ使う文字 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
