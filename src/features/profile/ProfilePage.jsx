@@ -87,7 +87,7 @@ export default function ProfilePage() {
       )}
       <p className="profile-note">数字は計算式による目安です。</p>
 
-      <GoalSection energy={energy} />
+      <GoalSection energy={energy} activity={profile.activity} />
     </section>
   )
 }
