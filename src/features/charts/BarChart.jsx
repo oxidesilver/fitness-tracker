@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 // 棒グラフを描く部品（SVG）。
-// bars：[{ key, label: 横軸の文字, value, title: なぞったときの見出し }]（左から順に並べる）
-// unit：単位。format：数字の表示のしかた
+// bars：[{ key, label: 横軸の文字, value, title: なぞったときの見出し, note: 補足（なくてもよい）, over: 目標を超えたか（なくてもよい）, empty: 記録がないか（なくてもよい） }]（左から順に並べる）
+// unit：単位。format：数字の表示のしかた。reference：{ value }（目標などの横線、なくてもよい。棒と重なるので文字は書かず、グラフの下の説明で伝える）
 // 棒を指でなぞる（タップ・マウスを乗せる）と、その棒の値が出る。いちばん右の棒には値を書いておく。
 const HEIGHT = 200
 const PAD = { top: 22, right: 8, bottom: 26, left: 40 }
@@ -19,7 +19,7 @@ function barPath(x, y, w, h, r) {
   return `M${x},${y + h} V${y + rr} Q${x},${y} ${x + rr},${y} H${x + w - rr} Q${x + w},${y} ${x + w},${y + rr} V${y + h} Z`
 }
 
-export default function BarChart({ bars, unit, format = (v) => Math.round(v).toLocaleString(), label }) {
+export default function BarChart({ bars, unit, format = (v) => Math.round(v).toLocaleString(), label, reference }) {
   const wrapRef = useRef(null)
   const [width, setWidth] = useState(340)
   const [active, setActive] = useState(null)
@@ -31,7 +31,7 @@ export default function BarChart({ bars, unit, format = (v) => Math.round(v).toL
     return () => observer.disconnect()
   }, [])
 
-  const max = Math.max(1, ...bars.map((b) => b.value))
+  const max = Math.max(1, ...bars.map((b) => b.value), reference ? reference.value : 0)
   const step = niceStep(max, 4)
   const yMax = Math.ceil(max / step) * step
   const ticks = []
@@ -87,17 +87,22 @@ export default function BarChart({ bars, unit, format = (v) => Math.round(v).toL
           <g key={b.key}>
             {b.value > 0 && (
               <path
-                className={active === i ? 'chart-bar chart-bar-active' : 'chart-bar'}
+                className={`chart-bar${b.over ? ' chart-bar-over' : ''}${active === i ? ' chart-bar-active' : ''}`}
                 d={barPath(cx(i) - barW / 2, y(b.value), barW, y(0) - y(b.value), 4)}
               />
             )}
             {i % every === (lastIndex % every) && (
-              <text className="chart-axis" x={cx(i)} y={HEIGHT - 8} textAnchor="middle">
+              <text className="chart-axis" x={Math.min(cx(i), width - PAD.right)} y={HEIGHT - 8} textAnchor={cx(i) + 18 > width - PAD.right ? 'end' : 'middle'}>
                 {b.label}
               </text>
             )}
           </g>
         ))}
+        {reference && (
+          <g>
+            <line className="chart-reference" x1={PAD.left} x2={width - PAD.right} y1={y(reference.value)} y2={y(reference.value)} />
+          </g>
+        )}
         {lastIndex >= 0 && active === null && bars[lastIndex].value > 0 && (
           <text className="chart-bar-label" x={cx(lastIndex)} y={y(bars[lastIndex].value) - 6} textAnchor="middle">
             {format(bars[lastIndex].value)}
@@ -106,11 +111,9 @@ export default function BarChart({ bars, unit, format = (v) => Math.round(v).toL
       </svg>
       {a && (
         <div className="chart-tooltip" style={{ left: Math.min(Math.max(cx(active), 70), width - 70), top: Math.max(0, y(a.value) - 60) }}>
-          <strong>
-            {format(a.value)}
-            {unit}
-          </strong>
+          <strong>{a.empty ? '記録なし' : `${format(a.value)}${unit}`}</strong>
           <span>{a.title}</span>
+          {a.note && <span>{a.note}</span>}
         </div>
       )}
     </div>

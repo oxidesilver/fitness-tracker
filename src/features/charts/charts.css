@@ -254,3 +254,80 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* 目標を超えた棒 */
+.chart-bar-over {
+  fill: var(--danger);
+}
+
+/* 説明の文の頭に付ける、色の見本 */
+.chart-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: baseline;
+}
+
+.chart-key-over {
+  background: var(--danger);
+}
+
+.chart-key-line {
+  height: 2px;
+  margin-left: 0;
+  vertical-align: middle;
+  background: var(--sub);
+}
+
+.chart-inline-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* PFC の平均の横棒 */
+.pfc-row {
+  margin-bottom: 12px;
+}
+
+.pfc-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pfc-text strong {
+  font-size: 17px;
+}
+
+.pfc-track {
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 4px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.pfc-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.pfc-fill.over {
+  background: var(--danger);
+}
+
+.pfc-note {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--sub);
+  text-align: right;
+}
+
+.pfc-note.over {
+  color: var(--danger);
+}
