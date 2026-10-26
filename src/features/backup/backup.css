@@ -1,0 +1,35 @@
+/* バックアップの部分だけで使う見た目 */
+.backup-help {
+  font-size: 13px;
+  color: var(--sub);
+  margin: 0 0 12px;
+}
+
+.backup-last {
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+/* ファイルを選ぶ欄は見えなくして、ボタンの形の label を押すと選べるようにする */
+.backup-import {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin: 10px 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  color: var(--accent);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.backup-import input {
+  display: none;
+}
+
+.backup-message {
+  color: var(--accent);
+  font-size: 15px;
+  margin: 0;
+}
