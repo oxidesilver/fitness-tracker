@@ -23,7 +23,9 @@ function AutoNote({ auto, text, onReset }) {
 
 // 目標の入力と、1日・1食あたりの目標摂取カロリーと PFC の表示。
 // プロフィールの画面の下に出す。energy は energyFromProfile の戻り値、heightCm は身長（文字のまま）
-export default function GoalSection({ energy, activity, heightCm }) {
+// editing が false のときは入力欄を出さず、目標のまとめだけを出す。
+// editing が true のときは「1日の目標」の下に「これでOK」を出す（canConfirm が false なら押せない）
+export default function GoalSection({ energy, activity, heightCm, editing = true, canConfirm, onConfirm }) {
   const [goal, setGoal] = useState(loadGoal)
   const [exercisePlan, setExercisePlan] = useState(loadExercisePlan)
 
@@ -78,6 +80,8 @@ export default function GoalSection({ energy, activity, heightCm }) {
 
   return (
     <>
+      {editing ? (
+        <>
       <h2>目標</h2>
       <div className="card goal-form">
         <label htmlFor="goal-date">いつまでに</label>
@@ -167,6 +171,33 @@ export default function GoalSection({ energy, activity, heightCm }) {
         activity={activity}
       />
 
+        </>
+      ) : (
+        <>
+          <h2>目標</h2>
+          <div className="card profile-summary">
+            <dl>
+              <dt>目標体重</dt>
+              <dd>
+                {targetKg !== null ? `約${targetKg.toFixed(1)}kg（${formatDate(goal.targetDate)}まで）` : '今の体重を保つ'}
+              </dd>
+              <dt>PFC</dt>
+              <dd>
+                {goal.pfcMode === 'body'
+                  ? `体づくり向け（たんぱく質 ${proteinPerKg?.toFixed(1) ?? '—'}g/kg・脂質 ${fatG ?? '—'}g）`
+                  : '国の目安'}
+              </dd>
+              <dt>運動の計画</dt>
+              <dd>
+                {exercise
+                  ? `週${exercisePlan.sessions}回・1回${exercisePlan.minutes}分（${exercise.items.map((i) => i.name.replace(/（.*）/, '')).join('・')}）`
+                  : 'なし'}
+              </dd>
+            </dl>
+          </div>
+        </>
+      )}
+
       <h2>1日の目標</h2>
       {problem ? (
         <p className="goal-problem">{problem}</p>
@@ -229,6 +260,18 @@ export default function GoalSection({ energy, activity, heightCm }) {
             </tbody>
           </table>
           <p className="goal-help">P＝たんぱく質、F＝脂質、C＝炭水化物。カロリーの単位は kcal です。</p>
+        </div>
+      )}
+      {editing && (
+        <div className="goal-confirm">
+          <button type="button" className="primary" onClick={onConfirm} disabled={!canConfirm || problem !== null}>
+            これでOK
+          </button>
+          <p className="goal-help">
+            {canConfirm && problem === null
+              ? '押すと入力欄がたたまれて、まとめだけになります。あとで「修正する」から直せます。'
+              : '上の入力がそろうと押せるようになります。'}
+          </p>
         </div>
       )}
     </>
