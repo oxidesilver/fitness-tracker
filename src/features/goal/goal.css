@@ -247,3 +247,16 @@
   color: var(--accent);
   border: 1px solid var(--accent);
 }
+
+/* これでOK */
+.goal-confirm {
+  margin-top: 16px;
+}
+
+.goal-confirm .primary:disabled {
+  opacity: 0.5;
+}
+
+.goal-confirm .goal-help {
+  margin-top: 6px;
+}

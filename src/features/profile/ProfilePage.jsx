@@ -4,12 +4,15 @@ import BackupSection from '../backup/BackupSection.jsx'
 import GoalSection from '../goal/GoalSection.jsx'
 import { loadWeights } from '../weight/weightStorage.js'
 import { ACTIVITY_LEVELS, energyFromProfile } from './energy.js'
+import FirstWeight from './FirstWeight.jsx'
 import { loadProfile, saveProfile } from './profileStorage.js'
 import './profile.css'
 
+// プロフィールの画面。入力が終わって「これでOK」を押すと、入力欄をたたんで設定のまとめだけを出す。
+// 「修正する」を押すと、また入力欄を出す（profile.confirmed で覚えておく）
 export default function ProfilePage() {
   const [profile, setProfile] = useState(loadProfile)
-  const [weights] = useState(loadWeights)
+  const [weights, setWeights] = useState(loadWeights)
 
   // 入力するたびに自動で保存する
   function update(field, value) {
@@ -20,13 +23,43 @@ export default function ProfilePage() {
 
   const energy = energyFromProfile(profile, weights, today())
   const { missing, age, weight } = energy
+  const editing = !profile.confirmed
+
+  function edit() {
+    update('confirmed', false)
+    window.scrollTo(0, 0)
+  }
+
+  function confirmAll() {
+    update('confirmed', true)
+    window.scrollTo(0, 0)
+  }
+
+  const activityLabel = ACTIVITY_LEVELS.find((l) => l.id === profile.activity)?.label
 
   return (
     <section>
       <h1>プロフィール</h1>
-      <p className="profile-note">入力すると自動で保存されます。</p>
 
-      <div className="card">
+      {!weight && <FirstWeight onSaved={() => setWeights(loadWeights())} />}
+
+      {editing ? (
+        <p className="profile-note">入力すると自動で保存されます。終わったら、下の「これでOK」を押してください。</p>
+      ) : (
+        <div className="card profile-summary">
+          <dl>
+            <dt>性別・年齢</dt>
+            <dd>{{ male: '男性', female: '女性' }[profile.sex] ?? '—'}・{age ?? '—'}歳</dd>
+            <dt>身長・体重</dt>
+            <dd>{profile.heightCm}cm・{weight ? `${weight.weightKg.toFixed(1)}kg` : '—'}</dd>
+            <dt>ふだんの活動量</dt>
+            <dd>{activityLabel}</dd>
+          </dl>
+          <button type="button" className="profile-edit" onClick={edit}>プロフィール・目標を修正する</button>
+        </div>
+      )}
+
+      {editing && <div className="card">
         <label>性別</label>
         <div className="segment">
           {[['male', '男性'], ['female', '女性']].map(([id, label]) => (
@@ -65,9 +98,9 @@ export default function ProfilePage() {
         </div>
 
         <p className="profile-weight">
-          体重：{weight ? `${weight.weightKg.toFixed(1)} kg（体重の画面の最新の記録）` : 'まだ記録がありません'}
+          体重：{weight ? `${weight.weightKg.toFixed(1)} kg（体重の画面の最新の記録）` : 'まだ記録がありません（いちばん上で記録できます）'}
         </p>
-      </div>
+      </div>}
 
       <h2>1日の消費カロリー</h2>
       {missing.length === 0 ? (
@@ -88,7 +121,14 @@ export default function ProfilePage() {
       )}
       <p className="profile-note">数字は計算式による目安です。</p>
 
-      <GoalSection energy={energy} activity={profile.activity} heightCm={profile.heightCm} />
+      <GoalSection
+        energy={energy}
+        activity={profile.activity}
+        heightCm={profile.heightCm}
+        editing={editing}
+        canConfirm={missing.length === 0}
+        onConfirm={confirmAll}
+      />
 
       <BackupSection />
     </section>
