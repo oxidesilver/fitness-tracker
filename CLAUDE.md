@@ -96,6 +96,12 @@
     - 書き出し：共有の画面（Web Share API）が使えればそれを出す（iPhone で「ファイルに保存」できる）。使えなければダウンロード（https://developer.mozilla.org/ja/docs/Web/API/Navigator/share ）
     - 読み込み：件数と日付を見せて確認してから、今の記録を全部置きかえ、アプリを読み込み直す
     - 最後に書き出した日は `fitness-tracker-meta.lastBackup`（バックアップの中身には入れない）
+- PWA（ホーム画面に置けるようにする設定）
+  - `public/manifest.webmanifest`：アプリ名「フィットネス記録」（ホーム画面では「フィットネス」）、ホーム画面から開くとブラウザの枠なしで表示（standalone）
+  - `public/icons/`：アイコン（青い背景に白いダンベル）。`scripts/make_icons.py` で作り直せる
+  - `public/sw.js`：サービスワーカー。ネットワーク優先で、つながらないときだけ保存しておいたものを使う（オフラインでも開ける）。画面（index.html）は毎回新しいか確かめるので、更新が反映されやすい。保存の形を大きく変えたら `CACHE` の名前を変える
+  - `index.html` に iPhone 用の設定（apple-touch-icon、apple-mobile-web-app-title など）
+  - `src/main.jsx` でサービスワーカーを登録（公開したものだけ）
 - 記録の保存は今のところ localStorage（ブラウザの中の小さな保存場所）を使う。保存処理は `〜Storage.js` にまとめてあるので、変えるときはそこだけ直す
   - https://developer.mozilla.org/ja/docs/Web/API/Window/localStorage
 
@@ -123,3 +129,4 @@
 - 2026-10-26：④運動の計画と提案を作成。運動で使う分だけ目標摂取カロリーを増やす（減らす分を食事と運動で分ける）
 - 2026-10-26：⑤食品成分表から選んで自動計算する機能を作成。作業環境のネットワークで www.mext.go.jp を許可した（本人が設定）
 - 2026-10-26：記録のバックアップ（書き出し・読み込み）を作成
+- 2026-10-26：PWA（アイコン・アプリ名・ホーム画面から枠なしで開く・オフラインでも開ける）を作成
