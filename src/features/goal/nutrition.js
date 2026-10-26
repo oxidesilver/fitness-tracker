@@ -46,10 +46,19 @@ export function pfcGrams({ intake, mode, weightKg, proteinPerKg, fatG }) {
   return { protein, fat: fatG, carbs }
 }
 
+// 目標体重（kg）。「減らしたい体重」を入れたときの体重から決める（なければ今の体重を使う）。目標がなければ null
+export function targetWeight(goal, currentWeightKg) {
+  const loseKg = Number(goal.loseKg)
+  if (!(loseKg > 0)) return null
+  const startKg = Number(goal.startWeightKg) > 0 ? Number(goal.startWeightKg) : currentWeightKg
+  return startKg ? startKg - loseKg : null
+}
+
 // 目標の入力から、目標摂取カロリーと PFC をまとめて出す。
 // energy は energyFromProfile の戻り値。goal は goalStorage の形。date は今日の日付
 // exerciseDaily は運動の計画で1日あたりに使うカロリー（なければ 0）
-// 戻り値：{ problem: 計算できない理由（なければ null）, loseKg, days, plan, pfc }
+// 1日に減らすカロリーは「目標体重まであと何kgか」から計算する（減った分だけ少なくなる）
+// 戻り値：{ problem: 計算できない理由（なければ null）, loseKg, targetKg, remainingKg, days, plan, pfc }
 export function goalPlan(energy, goal, date, exerciseDaily = 0) {
   const loseKg = goal.loseKg.trim() === '' ? 0 : Number(goal.loseKg)
   const days = goal.targetDate ? daysBetween(date, goal.targetDate) : null
@@ -62,9 +71,11 @@ export function goalPlan(energy, goal, date, exerciseDaily = 0) {
   else if (loseKg > 0 && !goal.targetDate) problem = 'いつまでに減らしたいか（日付）を入れてください'
   else if (loseKg > 0 && days <= 0) problem = '目標の日付は明日以降にしてください'
   else if (goal.pfcMode === 'body' && !(proteinPerKg > 0 && fatG > 0)) problem = 'たんぱく質と脂質の量を入れてください'
-  if (problem) return { problem, loseKg, days, plan: null, pfc: null }
+  if (problem) return { problem, loseKg, targetKg: null, remainingKg: 0, days, plan: null, pfc: null }
 
-  const plan = intakePlan({ dailyEnergy: energy.daily, loseKg, days, weightKg: energy.weightKg, exerciseDaily })
+  const targetKg = targetWeight(goal, energy.weightKg)
+  const remainingKg = targetKg === null ? 0 : Math.max(0, energy.weightKg - targetKg)
+  const plan = intakePlan({ dailyEnergy: energy.daily, loseKg: remainingKg, days, weightKg: energy.weightKg, exerciseDaily })
   const pfc = pfcGrams({ intake: plan.intake, mode: goal.pfcMode, weightKg: energy.weightKg, proteinPerKg, fatG })
-  return { problem, loseKg, days, plan, pfc }
+  return { problem, loseKg, targetKg, remainingKg, days, plan, pfc }
 }

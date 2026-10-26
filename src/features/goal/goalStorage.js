@@ -3,9 +3,10 @@ import { loadObject, saveObject } from '../../storage.js'
 
 const STORAGE_KEY = 'fitness-tracker.goal'
 
-// 形：{ loseKg: '5', targetDate: '2027-03-31', pfcMode: 'body' | 'national', proteinPerKg: '2', fatG: '45' }
+// 形：{ loseKg: '5', startWeightKg: 67, targetDate: '2027-03-31', pfcMode: 'body' | 'national', proteinPerKg: '2', fatG: '45' }
+// startWeightKg は「減らしたい体重」を入れたときの体重。目標体重 ＝ startWeightKg − loseKg で固定する
 // 値は入力中の文字のまま持つ
-const DEFAULT = { loseKg: '', targetDate: '', pfcMode: 'body', proteinPerKg: '2', fatG: '45' }
+const DEFAULT = { loseKg: '', startWeightKg: '', targetDate: '', pfcMode: 'body', proteinPerKg: '2', fatG: '45' }
 
 export function loadGoal() {
   return { ...DEFAULT, ...loadObject(STORAGE_KEY) }

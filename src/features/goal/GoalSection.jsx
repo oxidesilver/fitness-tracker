@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Stepper from '../../components/Stepper.jsx'
 import { formatDate, today } from '../../storage.js'
 import ExercisePlanSection from './ExercisePlanSection.jsx'
 import { exerciseKcal, loadExercisePlan, saveExercisePlan } from './exercisePlan.js'
 import { loadGoal, saveGoal } from './goalStorage.js'
-import { goalPlan } from './nutrition.js'
+import { goalPlan, targetWeight } from './nutrition.js'
 import './goal.css'
 
 const round = (n) => Math.round(n)
@@ -16,11 +16,21 @@ export default function GoalSection({ energy, activity }) {
   const [exercisePlan, setExercisePlan] = useState(loadExercisePlan)
 
   // 入力するたびに自動で保存する
+  const currentKg = energy.weight?.weightKg ?? null
+
   function update(field, value) {
     const next = { ...goal, [field]: value }
+    // 減らしたい体重を入れたときの体重を覚えておき、目標体重を固定する
+    if (field === 'loseKg' && currentKg !== null) next.startWeightKg = currentKg
     setGoal(next)
     saveGoal(next)
   }
+
+  // 前の版で入れた目標には、入れたときの体重がないので、今の体重を入れておく
+  useEffect(() => {
+    if (Number(goal.loseKg) > 0 && !goal.startWeightKg && currentKg !== null) update('startWeightKg', currentKg)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function updateExercisePlan(next) {
     setExercisePlan(next)
@@ -28,7 +38,7 @@ export default function GoalSection({ energy, activity }) {
   }
 
   const exercise = exerciseKcal(exercisePlan, energy.weightKg)
-  const { problem, loseKg, days, plan, pfc } = goalPlan(energy, goal, today(), exercise?.daily ?? 0)
+  const { problem, loseKg, targetKg, remainingKg, days, plan, pfc } = goalPlan(energy, goal, today(), exercise?.daily ?? 0)
 
   const warnings = []
   if (plan && plan.weeklyPercent > 1) {
@@ -53,8 +63,11 @@ export default function GoalSection({ energy, activity }) {
       <div className="card goal-form">
         <label>減らしたい体重（kg）</label>
         <Stepper label="減らしたい体重" value={goal.loseKg} onChange={(v) => update('loseKg', v)} step={0.5} unit="kg" placeholder="0" />
-        {energy.weightKg !== null && loseKg > 0 && (
-          <p className="goal-help">目標体重：約{(energy.weightKg - loseKg).toFixed(1)}kg</p>
+        {currentKg !== null && targetWeight(goal, currentKg) !== null && (
+          <p className="goal-help">
+            目標体重：約{targetWeight(goal, currentKg).toFixed(1)}kg（今の体重 {currentKg.toFixed(1)}kg、あと
+            {Math.max(0, currentKg - targetWeight(goal, currentKg)).toFixed(1)}kg）
+          </p>
         )}
 
         <label htmlFor="goal-date">いつまでに</label>
@@ -107,7 +120,7 @@ export default function GoalSection({ energy, activity }) {
                 <strong>＋ 約 {round(exercise.daily).toLocaleString()} kcal</strong>
               </div>
             )}
-            {loseKg > 0 && (
+            {plan.deficit > 0 && (
               <div>
                 <span>減らす分</span>
                 <strong>− 約 {round(plan.deficit).toLocaleString()} kcal</strong>
@@ -119,9 +132,11 @@ export default function GoalSection({ energy, activity }) {
             </div>
           </div>
           <p className="goal-help">
-            {loseKg > 0
-              ? `${formatDate(goal.targetDate)}まで${days}日。1日あたり約${round(plan.deficit).toLocaleString()}kcal 減らします（体脂肪1kg＝約7,000kcal）。`
-              : '減らしたい体重が0なので、今の体重を保つカロリーです。'}
+            {loseKg === 0
+              ? '減らしたい体重が0なので、今の体重を保つカロリーです。'
+              : remainingKg > 0
+                ? `目標体重 約${targetKg.toFixed(1)}kg まであと${remainingKg.toFixed(1)}kg。${formatDate(goal.targetDate)}まで${days}日なので、1日あたり約${round(plan.deficit).toLocaleString()}kcal 減らします（体脂肪1kg＝約7,000kcal）。`
+                : `目標体重 約${targetKg.toFixed(1)}kg に届いています🎉 今の体重を保つカロリーです。`}
           </p>
 
           {warnings.map((w) => (
