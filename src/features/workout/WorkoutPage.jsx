@@ -6,6 +6,7 @@ import { loadWeights } from '../weight/weightStorage.js'
 import { bodyWeightOn, workoutKcal } from './calories.js'
 import CardioEditor from './CardioEditor.jsx'
 import ExercisePicker from './ExercisePicker.jsx'
+import RecommendCard from './RecommendCard.jsx'
 import RunEditor from './RunEditor.jsx'
 import SetEditor from './SetEditor.jsx'
 import { EQUIPMENT, WORKOUT_GROUPS, isWeightOptional, startingWeight, workoutInfo } from './workoutCatalog.js'
@@ -98,6 +99,15 @@ export default function WorkoutPage() {
     }
   }
 
+  // おすすめメニューの「記録に使う」：その種目を選び、おすすめの重さでセットを入れて、記録の欄までスクロールする
+  function applyRecommendation(name, weight, count) {
+    setExercise(name)
+    setError('')
+    setSaved('')
+    setSets(Array.from({ length: count }, () => ({ weight, reps: '10' })))
+    document.getElementById('workout-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   // ランニングの入力を記録の形に直す。おかしければエラーの文を返す
   function parseRun() {
     const minutes = toNumber(run.minutes, { max: 1440 })
@@ -167,7 +177,10 @@ export default function WorkoutPage() {
     <section>
       <h1>筋トレ</h1>
 
-      <form className="card" onSubmit={handleSubmit}>
+      <RecommendCard records={records} bodyKg={bodyWeightOn(today(), weights)} sex={sex} onUse={applyRecommendation} />
+
+      <h2>記録する</h2>
+      <form id="workout-form" className="card" onSubmit={handleSubmit}>
         <label htmlFor="workout-date">日付</label>
         <input id="workout-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
 
