@@ -1,16 +1,26 @@
 import { useState } from 'react'
 import { loadExercisePlan } from '../goal/exercisePlan.js'
 import BodyMap from './BodyMap.jsx'
-import { MINUTES_PER_EXERCISE, PLACES, recommendMenu, strengthMinutes } from './recommend.js'
+import { MINUTES_PER_EXERCISE, PLACES, SPLIT_DAYS, STYLES, nextSplitDay, recommendMenu, recommendedStyle, strengthMinutes } from './recommend.js'
 import { GUIDE, videoSearchUrl } from './workoutGuide.js'
 
 const PLACE_KEY = 'fitness-tracker.trainingPlace'
+// 全身法・分割法を自分で選んだときだけ覚える（選んでいなければ、週の回数から自動で決める）
+const STYLE_KEY = 'fitness-tracker.trainingStyle'
 
-function loadPlace() {
+function loadSetting(key) {
   try {
-    return localStorage.getItem(PLACE_KEY) === 'home' ? 'home' : 'gym'
+    return localStorage.getItem(key)
   } catch {
-    return 'gym'
+    return null
+  }
+}
+
+function saveSetting(key, value) {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // 覚えられなくても切り替えはできる
   }
 }
 
@@ -18,22 +28,31 @@ function loadPlace() {
 // プロフィールの体重・性別・運動の計画（筋トレの時間）から、種目・重さ・セット数・時間を出す。
 // onUse(name, weight, sets) で、その種目を下の記録の欄に入れる
 export default function RecommendCard({ records, bodyKg, sex, onUse }) {
-  const [place, setPlace] = useState(loadPlace)
-  const [open, setOpen] = useState(null)
+  const [place, setPlace] = useState(() => (loadSetting(PLACE_KEY) === 'home' ? 'home' : 'gym'))
   const [plan] = useState(loadExercisePlan)
+  const autoStyle = recommendedStyle(plan.sessions)
+  const [style, setStyle] = useState(() => {
+    const saved = loadSetting(STYLE_KEY)
+    return saved === 'full' || saved === 'split' ? saved : autoStyle
+  })
+  const [splitDay, setSplitDay] = useState(() => nextSplitDay(records, GUIDE))
+  const [open, setOpen] = useState(null)
 
   function changePlace(id) {
     setPlace(id)
     setOpen(null)
-    try {
-      localStorage.setItem(PLACE_KEY, id)
-    } catch {
-      // 覚えられなくても切り替えはできる
-    }
+    saveSetting(PLACE_KEY, id)
+  }
+
+  function changeStyle(id) {
+    setStyle(id)
+    setOpen(null)
+    saveSetting(STYLE_KEY, id)
   }
 
   const { minutes, fromPlan } = strengthMinutes(plan, bodyKg)
-  const menu = recommendMenu({ place, minutes, records, bodyKg, sex })
+  const day = style === 'split' ? splitDay : 'full'
+  const menu = recommendMenu({ place, day, minutes, records, bodyKg, sex })
   const total = menu.reduce((a, m) => a + m.minutes, 0)
 
   return (
@@ -50,6 +69,31 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
           </button>
         ))}
       </div>
+
+      <div className="segment recommend-place" role="group" aria-label="やり方">
+        {STYLES.map((st) => (
+          <button key={st.id} type="button" className={style === st.id ? 'active' : ''} onClick={() => changeStyle(st.id)}>
+            {st.label}
+            {st.id === autoStyle && <small className="recommend-badge">おすすめ</small>}
+          </button>
+        ))}
+      </div>
+      <p className="workout-note">
+        {style === 'full'
+          ? '全身法：1回で全身を鍛えます。週3回までならこちらがおすすめです。'
+          : '分割法：上半身の日と下半身の日を交互に行います。週4回以上ならこちらがおすすめです。'}
+        {plan.sessions ? `（運動の計画：週${plan.sessions}回）` : '（プロフィールで運動の計画を入れると、週の回数からおすすめを出します）'}
+      </p>
+      {style === 'split' && (
+        <div className="segment recommend-place" role="group" aria-label="今日の日">
+          {SPLIT_DAYS.map((d) => (
+            <button key={d.id} type="button" className={splitDay === d.id ? 'active' : ''} onClick={() => { setSplitDay(d.id); setOpen(null) }}>
+              {d.label}
+              {d.id === nextSplitDay(records, GUIDE) && <small className="recommend-badge">次はこちら</small>}
+            </button>
+          ))}
+        </div>
+      )}
 
       <p className="workout-note">
         {menu.some((m) => !m.bodyweight)
