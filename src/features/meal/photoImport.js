@@ -22,6 +22,12 @@ const LABELS = [
   { field: 'carbs', words: ['炭水化物', '糖質', 'c'] },
 ]
 
+// 文の途中にある「カロリー:」などを見つける（1文字の P/F/C は下で別に探す）
+const LABEL_IN_LINE = new RegExp(
+  `(${LABELS.flatMap((l) => l.words).filter((w) => w.length > 1).join('|')})\\s*:`,
+  'gi',
+)
+
 // 「600〜700」のような範囲なら真ん中、そうでなければ最初の数字
 function firstNumber(text) {
   const range = text.match(/(\d+(?:\.\d+)?)\s*[〜~\-ー－]\s*(\d+(?:\.\d+)?)/)
@@ -36,6 +42,9 @@ export function parseAnswer(answer) {
   const result = { name: null, kcal: null, protein: null, fat: null, carbs: null }
   const lines = answer
     .normalize('NFKC') // 全角の数字やコロンを半角にそろえる
+    // 改行なしの1行で返ってきても読めるように、「カロリー:」などの前で改行する
+    .replace(LABEL_IN_LINE, '\n$1:')
+    .replace(/(^|\s)([pfc])\s*:/gi, '\n$2:')
     .split(/\r?\n/)
     .map((l) => l.replace(/[*#`>]/g, '').replace(/^[\s・\-]+/, '').trim())
   for (const line of lines) {
