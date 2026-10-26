@@ -43,7 +43,7 @@ export default function WeightChart({ weights, goal, from, to }) {
       </div>
 
       <div className="card chart-card">
-        <h2>体重（kg）</h2>
+        <h2>体重の変化（kg）</h2>
         <LineChart
           points={inRange.map((w) => ({ date: w.date, value: w.weightKg }))}
           from={from}

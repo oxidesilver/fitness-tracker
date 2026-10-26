@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { today } from '../../storage.js'
 import { loadGoal } from '../goal/goalStorage.js'
 import { loadWeights } from '../weight/weightStorage.js'
+import { loadWorkouts } from '../workout/workoutStorage.js'
 import WeightChart from './WeightChart.jsx'
+import WorkoutCharts from './WorkoutCharts.jsx'
 import './charts.css'
 
 const RANGES = [
@@ -18,10 +20,11 @@ function daysAgo(date, days) {
 }
 
 // グラフの画面。上の期間の切り替えは、この画面のグラフ全部に効く。
-// 今は体重だけ。筋トレ・食事のグラフはここに足していく。
+// 今は体重と筋トレ。食事のグラフはここに足していく。
 export default function ChartsPage() {
   const [weights] = useState(loadWeights)
   const [goal] = useState(loadGoal)
+  const [workouts] = useState(loadWorkouts)
   const [range, setRange] = useState(() => {
     try {
       return RANGES.some((r) => r.id === localStorage.getItem(RANGE_KEY)) ? localStorage.getItem(RANGE_KEY) : '1m'
@@ -41,7 +44,7 @@ export default function ChartsPage() {
 
   const to = today()
   const days = RANGES.find((r) => r.id === range).days
-  const oldest = weights.reduce((min, w) => (w.date < min ? w.date : min), to)
+  const oldest = [...weights, ...workouts].reduce((min, w) => (w.date < min ? w.date : min), to)
   const from = days === null ? (oldest < to ? oldest : daysAgo(to, 7)) : daysAgo(to, days)
 
   return (
@@ -55,7 +58,11 @@ export default function ChartsPage() {
         ))}
       </div>
 
+      <h2 className="chart-section">体重</h2>
       <WeightChart weights={weights} goal={goal} from={from} to={to} />
+
+      <h2 className="chart-section">筋トレ</h2>
+      <WorkoutCharts workouts={workouts} weights={weights} from={from} to={to} />
     </section>
   )
 }
