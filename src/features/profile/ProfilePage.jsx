@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { today } from '../../storage.js'
+import BackupSection from '../backup/BackupSection.jsx'
 import GoalSection from '../goal/GoalSection.jsx'
 import { loadWeights } from '../weight/weightStorage.js'
 import { ACTIVITY_LEVELS, energyFromProfile } from './energy.js'
@@ -88,6 +89,8 @@ export default function ProfilePage() {
       <p className="profile-note">数字は計算式による目安です。</p>
 
       <GoalSection energy={energy} activity={profile.activity} />
+
+      <BackupSection />
     </section>
   )
 }
