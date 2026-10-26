@@ -8,6 +8,26 @@ import './meal.css'
 
 const EMPTY_FORM = { name: '', kcal: '', protein: '', fat: '', carbs: '' }
 
+// 入れ方：build（食品・料理を選んで献立を作る）、label（栄養成分表示を見て数字を入れる）
+const MODES = [
+  { id: 'build', label: '選んで作る' },
+  { id: 'label', label: '栄養成分表示から' },
+]
+
+const round1 = (n) => Math.round(n * 10) / 10
+
+// 献立の合計。分からない値（null）は 0 として足す
+function itemsTotal(items) {
+  const sum = (k) => items.reduce((a, i) => a + (i[k] ?? 0), 0)
+  return { kcal: Math.round(sum('kcal')), protein: round1(sum('protein')), fat: round1(sum('fat')), carbs: round1(sum('carbs')) }
+}
+
+// 献立から名前を作る：'ご飯 150g・鶏むね 100g'（3つより多いときは「ほか」）
+function itemsName(items) {
+  const names = items.map((i) => `${i.name} ${i.grams}g`)
+  return names.length > 3 ? `${names.slice(0, 3).join('・')} ほか${names.length - 3}品` : names.join('・')
+}
+
 const NUTRIENTS = [
   { id: 'kcal', label: 'カロリー', unit: 'kcal' },
   { id: 'protein', label: 'たんぱく質', unit: 'g' },
@@ -37,7 +57,10 @@ export default function MealPage() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState('')
-  // 開いている入力の手伝い：'table'（食品成分表）・'photo'（写真）・null
+  const [mode, setMode] = useState('build')
+  // 献立（選んで作る）の中身：[{ code, name, grams, kcal, protein, fat, carbs }]
+  const [items, setItems] = useState([])
+  // 開いている入力の手伝い：'table'（食品・料理を追加）・'photo'（写真）・null
   const [helper, setHelper] = useState(null)
 
   const dayMeals = records.filter((r) => r.date === date)
@@ -49,40 +72,76 @@ export default function MealPage() {
     setSaved('')
   }
 
-  // よく食べるものを選ぶと、名前と数字が入る
+  // よく食べるものを選ぶ。献立で作った食事なら献立ごと、そうでなければ数字を入れる
   function pickFood(name) {
     const food = foods.find((f) => f.name === name)
     if (!food) return
-    const text = (n) => (n === null || n === undefined ? '' : String(n))
-    setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
     setSaved('')
+    setError('')
+    if (food.items?.length) {
+      setMode('build')
+      setItems(food.items)
+      setForm({ ...EMPTY_FORM, name: food.name })
+      return
+    }
+    const text = (n) => (n === null || n === undefined ? '' : String(n))
+    setMode('label')
+    setItems([])
+    setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
   }
 
-  // 食品成分表や写真から出した名前と数字を入れる
-  function pickFromHelper(food) {
+  // 写真から出した名前と数字を、栄養成分表示の欄に入れる
+  function pickFromPhoto(food) {
     const text = (n) => (n === null ? '' : String(n))
     setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
     setHelper(null)
     setSaved('')
   }
 
+  function addItem(item) {
+    setItems((list) => [...list, item])
+    setSaved('')
+    setError('')
+  }
+
+  function removeItem(index) {
+    setItems((list) => list.filter((_, i) => i !== index))
+  }
+
+  function changeMode(id) {
+    setMode(id)
+    setHelper(null)
+    setError('')
+  }
+
   function handleSubmit(e) {
     e.preventDefault()
-    const name = form.name.trim()
     if (!date) return setError('日付を入れてください')
-    if (!name) return setError('何を食べたかを入れてください')
-    const values = {}
-    for (const n of NUTRIENTS) {
-      const v = toNumber(form[n.id])
-      if (Number.isNaN(v)) return setError(`${n.label}を正しく入れてください`)
-      values[n.id] = v
-    }
-    if (values.kcal === null) return setError('カロリーを入れてください')
 
-    setRecords(addMeal({ date, time, name, ...values }))
+    let record
+    if (mode === 'build') {
+      if (items.length === 0) return setError('「＋ 食品・料理を追加」から、食べたものを選んでください')
+      const name = form.name.trim() || itemsName(items)
+      record = { date, time, name, ...itemsTotal(items), items }
+    } else {
+      const name = form.name.trim()
+      if (!name) return setError('何を食べたかを入れてください')
+      const values = {}
+      for (const n of NUTRIENTS) {
+        const v = toNumber(form[n.id])
+        if (Number.isNaN(v)) return setError(`${n.label}を正しく入れてください`)
+        values[n.id] = v
+      }
+      if (values.kcal === null) return setError('カロリーを入れてください')
+      record = { date, time, name, ...values }
+    }
+
+    setRecords(addMeal(record))
     setForm(EMPTY_FORM)
+    setItems([])
+    setHelper(null)
     setError('')
-    setSaved(`${name}を記録しました`)
+    setSaved(`${record.name}を記録しました`)
   }
 
   function handleDelete(meal) {
@@ -146,7 +205,7 @@ export default function MealPage() {
           <>
             <label htmlFor="meal-frequent">よく食べるものから選ぶ</label>
             <select id="meal-frequent" className="meal-select" value="" onChange={(e) => pickFood(e.target.value)}>
-              <option value="" disabled>選ぶと下に数字が入ります</option>
+              <option value="" disabled>選ぶと下に入ります</option>
               {foods.map((f) => (
                 <option key={f.name} value={f.name}>{f.name}（{f.kcal}kcal）</option>
               ))}
@@ -154,36 +213,80 @@ export default function MealPage() {
           </>
         )}
 
-        {helper === 'table' && <FoodSearch onPick={pickFromHelper} onClose={() => setHelper(null)} />}
-        {helper === 'photo' && <PhotoImport onPick={pickFromHelper} onClose={() => setHelper(null)} />}
-        {helper === null && (
-          <div className="helper-buttons">
-            <button type="button" className="food-open" onClick={() => setHelper('table')}>🔍 食品成分表から</button>
-            <button type="button" className="food-open" onClick={() => setHelper('photo')}>📷 写真から</button>
-          </div>
-        )}
-
-        <label htmlFor="meal-name">何を食べたか</label>
-        <input id="meal-name" type="text" placeholder="例：鶏むね肉のサラダ" value={form.name} onChange={(e) => update('name', e.target.value)} />
-
-        <div className="meal-numbers">
-          {NUTRIENTS.map((n) => (
-            <div key={n.id}>
-              <label htmlFor={`meal-${n.id}`}>{n.label}</label>
-              <div className="meal-input">
-                <input
-                  id={`meal-${n.id}`}
-                  type="text"
-                  inputMode="decimal"
-                  placeholder={n.id === 'kcal' ? '必須' : '分かれば'}
-                  value={form[n.id]}
-                  onChange={(e) => update(n.id, e.target.value)}
-                />
-                <span>{n.unit}</span>
-              </div>
-            </div>
+        <div className="segment meal-modes" role="group" aria-label="入れ方">
+          {MODES.map((m) => (
+            <button key={m.id} type="button" className={mode === m.id ? 'active' : ''} onClick={() => changeMode(m.id)}>
+              {m.label}
+            </button>
           ))}
         </div>
+
+        {mode === 'build' ? (
+          <>
+            <p className="meal-help">食品や料理を選んで、1回の食事（献立）を作ります。自炊やふだんの食事に使います。</p>
+            {items.length > 0 && (
+              <ul className="meal-items">
+                {items.map((it, i) => (
+                  <li key={`${it.code}-${i}`}>
+                    <div>
+                      <span className="meal-item-name">{it.name}</span>
+                      <span className="meal-detail">{it.grams}g・{it.kcal}kcal</span>
+                    </div>
+                    <button type="button" className="meal-item-remove" aria-label={`${it.name}を外す`} onClick={() => removeItem(i)}>✕</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {helper === 'table' ? (
+              <FoodSearch onAdd={addItem} onClose={() => setHelper(null)} />
+            ) : (
+              <button type="button" className="food-open" onClick={() => setHelper('table')}>＋ 食品・料理を追加</button>
+            )}
+            {items.length > 0 && (
+              <>
+                <p className="meal-items-total">
+                  合計 <strong>{itemsTotal(items).kcal}kcal</strong>
+                  ・たんぱく質{itemsTotal(items).protein}g・脂質{itemsTotal(items).fat}g・炭水化物{itemsTotal(items).carbs}g
+                </p>
+                <label htmlFor="meal-name">名前（空なら自動でつけます）</label>
+                <input id="meal-name" type="text" placeholder={itemsName(items)} value={form.name} onChange={(e) => update('name', e.target.value)} />
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="meal-help">
+              お店で買ったお弁当・パン・お菓子などは、袋や箱の「栄養成分表示」の数字をそのまま入れるのがいちばん正確です。外食などで表示がないときは、写真から入れられます。
+            </p>
+            {helper === 'photo' ? (
+              <PhotoImport onPick={pickFromPhoto} onClose={() => setHelper(null)} />
+            ) : (
+              <button type="button" className="food-open" onClick={() => setHelper('photo')}>📷 写真から（外食など）</button>
+            )}
+
+            <label htmlFor="meal-name">何を食べたか</label>
+            <input id="meal-name" type="text" placeholder="例：コンビニのおにぎり（鮭）" value={form.name} onChange={(e) => update('name', e.target.value)} />
+
+            <div className="meal-numbers">
+              {NUTRIENTS.map((n) => (
+                <div key={n.id}>
+                  <label htmlFor={`meal-${n.id}`}>{n.label}</label>
+                  <div className="meal-input">
+                    <input
+                      id={`meal-${n.id}`}
+                      type="text"
+                      inputMode="decimal"
+                      placeholder={n.id === 'kcal' ? '必須' : '分かれば'}
+                      value={form[n.id]}
+                      onChange={(e) => update(n.id, e.target.value)}
+                    />
+                    <span>{n.unit}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {error && <p className="error">{error}</p>}
         {saved && <p className="meal-saved">✓ {saved}</p>}

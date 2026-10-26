@@ -13,6 +13,7 @@ export const MEAL_TIMES = [
 
 // 記録の形：{ id, date: '2026-10-26', time: 'breakfast', name: '鶏むね肉のサラダ', kcal: 350, protein: 30, fat: 10, carbs: 20 }
 // P・F・C は分からなければ null
+// 「選んで作る」で記録したときは items（献立の中身：[{ code, name, grams, kcal, protein, fat, carbs }]）も持つ
 export function loadMeals() {
   return loadList(STORAGE_KEY)
 }
