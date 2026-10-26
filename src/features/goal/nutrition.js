@@ -43,3 +43,25 @@ export function pfcGrams({ intake, mode, weightKg, proteinPerKg, fatG }) {
   const carbs = (intake - protein * KCAL_PER_G.protein - fatG * KCAL_PER_G.fat) / KCAL_PER_G.carbs
   return { protein, fat: fatG, carbs }
 }
+
+// 目標の入力から、目標摂取カロリーと PFC をまとめて出す。
+// energy は energyFromProfile の戻り値。goal は goalStorage の形。date は今日の日付
+// 戻り値：{ problem: 計算できない理由（なければ null）, loseKg, days, plan, pfc }
+export function goalPlan(energy, goal, date) {
+  const loseKg = goal.loseKg.trim() === '' ? 0 : Number(goal.loseKg)
+  const days = goal.targetDate ? daysBetween(date, goal.targetDate) : null
+  const proteinPerKg = Number(goal.proteinPerKg)
+  const fatG = Number(goal.fatG)
+
+  let problem = null
+  if (energy.daily === null) problem = 'プロフィールを入れると計算できます'
+  else if (!(loseKg >= 0 && loseKg < 100)) problem = '減らしたい体重を正しく入れてください'
+  else if (loseKg > 0 && !goal.targetDate) problem = 'いつまでに減らしたいか（日付）を入れてください'
+  else if (loseKg > 0 && days <= 0) problem = '目標の日付は明日以降にしてください'
+  else if (goal.pfcMode === 'body' && !(proteinPerKg > 0 && fatG > 0)) problem = 'たんぱく質と脂質の量を入れてください'
+  if (problem) return { problem, loseKg, days, plan: null, pfc: null }
+
+  const plan = intakePlan({ dailyEnergy: energy.daily, loseKg, days, weightKg: energy.weightKg })
+  const pfc = pfcGrams({ intake: plan.intake, mode: goal.pfcMode, weightKg: energy.weightKg, proteinPerKg, fatG })
+  return { problem, loseKg, days, plan, pfc }
+}

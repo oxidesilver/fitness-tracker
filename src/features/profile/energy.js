@@ -35,3 +35,27 @@ export function ageOn(birthDate, date) {
   const [y, m, d] = date.split('-').map(Number)
   return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0)
 }
+
+// いちばん新しい体重の記録（なければ null）
+export function latestWeight(weights) {
+  return weights.length === 0 ? null : weights.reduce((a, b) => (b.date > a.date ? b : a))
+}
+
+// プロフィールと体重の記録から、基礎代謝と1日の消費カロリーをまとめて出す。
+// 戻り値：{ missing: 足りない項目の名前の一覧, age, weight: 体重の記録, basal, daily, weightKg }
+//   足りない項目があるときは basal・daily・weightKg は null
+export function energyFromProfile(profile, weights, date) {
+  const weight = latestWeight(weights)
+  const heightCm = Number(profile.heightCm)
+  const age = profile.birthDate ? ageOn(profile.birthDate, date) : null
+  const missing = [
+    !profile.sex && '性別',
+    !profile.birthDate && '生年月日',
+    !(heightCm > 50 && heightCm < 250) && '身長',
+    !profile.activity && 'ふだんの活動量',
+    !weight && '体重（体重の画面で記録）',
+  ].filter(Boolean)
+  if (missing.length > 0) return { missing, age, weight, basal: null, daily: null, weightKg: null }
+  const input = { sex: profile.sex, weightKg: weight.weightKg, heightCm, age, activity: profile.activity }
+  return { missing, age, weight, basal: basalMetabolism(input), daily: dailyEnergy(input), weightKg: weight.weightKg }
+}
