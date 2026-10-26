@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { formatDate } from '../../storage.js'
 import { bodyWeightOn, workoutKcal } from '../workout/calories.js'
 import BarChart from './BarChart.jsx'
+import { addDays, short, weekStart, weeksBetween } from './dates.js'
 import LineChart from './LineChart.jsx'
 
 // その種目を、1日ごとの1つの数字にする。
@@ -25,25 +26,6 @@ function dailyValues(records) {
   return { points, unit: '回', what: 'その日いちばん多かった回数', title: '回数（回）' }
 }
 
-// '2026-10-26' がふくまれる週の月曜日
-function weekStart(date) {
-  const [y, m, d] = date.split('-').map(Number)
-  const t = new Date(Date.UTC(y, m - 1, d))
-  const back = (t.getUTCDay() + 6) % 7
-  return new Date(Date.UTC(y, m - 1, d - back)).toISOString().slice(0, 10)
-}
-
-function addDays(date, n) {
-  const [y, m, d] = date.split('-').map(Number)
-  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
-}
-
-// '2026-10-05' → '10/5'
-function short(date) {
-  const [, m, d] = date.split('-').map(Number)
-  return `${m}/${d}`
-}
-
 // 筋トレのグラフ：種目ごとの変化（折れ線）と、週ごとの運動量（棒）
 export default function WorkoutCharts({ workouts, weights, from, to }) {
   // よく記録している種目ほど上
@@ -63,9 +45,7 @@ export default function WorkoutCharts({ workouts, weights, from, to }) {
 
   // 週ごとの運動量。体重の記録があれば消費カロリー、なければ運動した日数
   const useKcal = weights.length > 0
-  const weeks = []
-  for (let w = weekStart(from); w <= to; w = addDays(w, 7)) weeks.push(w)
-  const bars = weeks.map((w) => {
+  const bars = weeksBetween(from, to).map((w) => {
     const end = addDays(w, 6)
     const items = workouts.filter((r) => r.date >= w && r.date <= end)
     const value = useKcal
