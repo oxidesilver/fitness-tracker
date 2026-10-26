@@ -38,6 +38,7 @@ const STRENGTH = [
     { name: 'ラットプルダウン', equipment: 'machine', ratio: 0.35 },
     { name: 'シーテッドロウ（マシン）', equipment: 'machine', ratio: 0.3 },
     { name: '懸垂', equipment: 'bodyweight' },
+    { name: 'バックエクステンション', equipment: 'bodyweight' },
   ] },
   { group: '脚・お尻', items: [
     { name: 'スクワット', equipment: 'barbell', ratio: 0.5 },

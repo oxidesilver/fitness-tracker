@@ -197,3 +197,166 @@
   background: var(--bg);
   color: var(--text);
 }
+
+/* おすすめメニュー */
+.recommend {
+  margin-bottom: 8px;
+}
+
+.recommend summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.recommend-time {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--sub);
+}
+
+.segment.recommend-place {
+  margin: 12px 0;
+}
+
+.recommend-list {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+}
+
+.recommend-list > li {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+
+.recommend-head {
+  display: flex;
+  gap: 10px;
+}
+
+.recommend-no {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.recommend-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recommend-detail {
+  font-size: 15px;
+}
+
+.recommend-sub {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.recommend-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.recommend-buttons button {
+  min-height: 44px;
+  font-size: 15px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.recommend-guide {
+  margin-top: 12px;
+}
+
+.guide-steps {
+  margin: 8px 0;
+  padding-left: 22px;
+  font-size: 15px;
+}
+
+.guide-steps li {
+  margin-bottom: 4px;
+}
+
+.guide-video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 15px;
+}
+
+/* 鍛える場所の絵 */
+.body-figures {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.body-figure {
+  margin: 0;
+  text-align: center;
+}
+
+.body-figure svg {
+  width: 90px;
+  height: 180px;
+}
+
+.body-figure figcaption {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.body-base {
+  fill: var(--border);
+}
+
+.body-part {
+  fill: var(--border);
+  stroke: var(--card);
+  stroke-width: 1.5;
+}
+
+.body-part.active {
+  fill: var(--accent);
+}
+
+.body-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  margin: 6px 0 0;
+}
+
+.body-legend-key {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--accent);
+}
