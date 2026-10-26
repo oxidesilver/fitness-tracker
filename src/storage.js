@@ -28,3 +28,18 @@ export function formatDate(date) {
   const week = '日月火水木金土'[new Date(y, m - 1, d).getDay()]
   return `${y}年${m}月${d}日（${week}）`
 }
+
+// 1つのまとまった設定（プロフィールなど）を保存・読み込みする
+export function loadObject(key) {
+  try {
+    const text = localStorage.getItem(key)
+    const obj = text ? JSON.parse(text) : null
+    return obj && typeof obj === 'object' && !Array.isArray(obj) ? obj : null
+  } catch {
+    return null
+  }
+}
+
+export function saveObject(key, obj) {
+  localStorage.setItem(key, JSON.stringify(obj))
+}

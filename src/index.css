@@ -110,3 +110,26 @@ input[type='date']::-webkit-date-and-time-value {
   font-size: 15px;
   margin: -8px 0 12px;
 }
+
+/* 2〜3個から1つを選ぶ切り替えボタン（例：マシン｜外、男性｜女性） */
+.segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+
+.segment button {
+  min-height: 40px;
+  background: transparent;
+  color: var(--sub);
+}
+
+.segment button.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
