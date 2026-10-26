@@ -191,7 +191,7 @@ export default function GoalSection({ energy, activity, heightCm, editing = true
               <dt>運動の計画</dt>
               <dd>
                 {exercise
-                  ? `週${exercisePlan.sessions}回・1回${exercisePlan.minutes}分（${exercise.items.map((i) => i.name.replace(/（.*）/, '')).join('・')}）`
+                  ? `週${exercisePlan.sessions}回・1回${exercisePlan.minutes}分（${exercise.items.map((i) => i.name).join('・')}）`
                   : 'なし'}
               </dd>
             </dl>
