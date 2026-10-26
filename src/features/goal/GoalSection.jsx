@@ -72,10 +72,11 @@ export default function GoalSection({ energy, activity, heightCm, editing = true
     warnings.push('たんぱく質と脂質だけで目標カロリーを超えています。たんぱく質か脂質の量を減らしてください。')
   }
 
+  // 表の列：1日分、1日3食のときの1食分、1日2食のときの1食分
   const rows = pfc && [
     ['1日', 1],
-    ['1食（3食の場合）', 3],
-    ['1食（2食の場合）', 2],
+    ['1食（3食）', 3],
+    ['1食（2食）', 2],
   ]
 
   return (
@@ -116,7 +117,7 @@ export default function GoalSection({ energy, activity, heightCm, editing = true
           </p>
         )}
 
-        <label>PFC（たんぱく質・脂質・炭水化物）の決め方</label>
+        <label>たんぱく質・脂質・炭水化物の決め方</label>
         <div className="segment">
           <button type="button" className={goal.pfcMode === 'body' ? 'active' : ''} onClick={() => update('pfcMode', 'body')}>
             体づくり向け
@@ -181,7 +182,7 @@ export default function GoalSection({ energy, activity, heightCm, editing = true
               <dd>
                 {targetKg !== null ? `約${targetKg.toFixed(1)}kg（${formatDate(goal.targetDate)}まで）` : '今の体重を保つ'}
               </dd>
-              <dt>PFC</dt>
+              <dt>栄養の決め方</dt>
               <dd>
                 {goal.pfcMode === 'body'
                   ? `体づくり向け（たんぱく質 ${proteinPerKg?.toFixed(1) ?? '—'}g/kg・脂質 ${fatG ?? '—'}g）`
@@ -241,25 +242,30 @@ export default function GoalSection({ energy, activity, heightCm, editing = true
             <thead>
               <tr>
                 <th></th>
-                <th>カロリー</th>
-                <th>P</th>
-                <th>F</th>
-                <th>C</th>
+                {rows.map(([label]) => (
+                  <th key={label}>{label}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map(([label, n]) => (
-                <tr key={label}>
-                  <th>{label}</th>
-                  <td>{round(plan.intake / n).toLocaleString()}</td>
-                  <td>{round(pfc.protein / n)}g</td>
-                  <td>{round(pfc.fat / n)}g</td>
-                  <td>{round(Math.max(0, pfc.carbs) / n)}g</td>
+              {[
+                ['カロリー', plan.intake, 'kcal'],
+                ['たんぱく質', pfc.protein, 'g'],
+                ['脂質', pfc.fat, 'g'],
+                ['炭水化物', Math.max(0, pfc.carbs), 'g'],
+              ].map(([name, value, unit]) => (
+                <tr key={name}>
+                  <th>{name}</th>
+                  {rows.map(([label, n]) => (
+                    <td key={label}>
+                      {round(value / n).toLocaleString()}
+                      <small>{unit}</small>
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="goal-help">P＝たんぱく質、F＝脂質、C＝炭水化物。カロリーの単位は kcal です。</p>
         </div>
       )}
       {editing && (

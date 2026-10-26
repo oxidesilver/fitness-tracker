@@ -3,9 +3,9 @@ import BarChart from './BarChart.jsx'
 import { addDays, short, weeksBetween } from './dates.js'
 
 const NUTRIENTS = [
-  { id: 'protein', label: 'たんぱく質（P）' },
-  { id: 'fat', label: '脂質（F）' },
-  { id: 'carbs', label: '炭水化物（C）' },
+  { id: 'protein', label: 'たんぱく質' },
+  { id: 'fat', label: '脂質' },
+  { id: 'carbs', label: '炭水化物' },
 ]
 
 // 日付ごとの合計：Map('2026-10-26' → { kcal, protein, fat, carbs })
@@ -116,7 +116,7 @@ export default function MealCharts({ meals, target, from, to, daily }) {
       </div>
 
       <div className="card chart-card">
-        <h2>直近7日の PFC の平均</h2>
+        <h2>直近7日のたんぱく質・脂質・炭水化物</h2>
         {last7.length === 0 ? (
           <p className="chart-empty">直近7日の食事の記録がありません。</p>
         ) : (
@@ -148,7 +148,7 @@ export default function MealCharts({ meals, target, from, to, daily }) {
                 </div>
               )
             })}
-            <p className="chart-hint">P・F・C を入れていない食事は 0g として数えています。</p>
+            <p className="chart-hint">たんぱく質・脂質・炭水化物を入れていない食事は 0g として数えています。</p>
           </>
         )}
       </div>

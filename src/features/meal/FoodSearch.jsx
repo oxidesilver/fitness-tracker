@@ -52,9 +52,9 @@ export default function FoodSearch({ onPick, onClose }) {
           {g > 0 && (
             <p className="food-values">
               {Math.round((food.kcal * g) / 100)}kcal
-              {food.protein !== null && ` ・P${scaled(food.protein)}g`}
-              {food.fat !== null && ` ・F${scaled(food.fat)}g`}
-              {food.carbs !== null && ` ・C${scaled(food.carbs)}g`}
+              {food.protein !== null && ` ・たんぱく質${scaled(food.protein)}g`}
+              {food.fat !== null && ` ・脂質${scaled(food.fat)}g`}
+              {food.carbs !== null && ` ・炭水化物${scaled(food.carbs)}g`}
             </p>
           )}
           <div className="food-buttons">

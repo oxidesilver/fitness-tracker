@@ -10,9 +10,9 @@ const EMPTY_FORM = { name: '', kcal: '', protein: '', fat: '', carbs: '' }
 
 const NUTRIENTS = [
   { id: 'kcal', label: 'カロリー', unit: 'kcal' },
-  { id: 'protein', label: 'たんぱく質（P）', unit: 'g' },
-  { id: 'fat', label: '脂質（F）', unit: 'g' },
-  { id: 'carbs', label: '炭水化物（C）', unit: 'g' },
+  { id: 'protein', label: 'たんぱく質', unit: 'g' },
+  { id: 'fat', label: '脂質', unit: 'g' },
+  { id: 'carbs', label: '炭水化物', unit: 'g' },
 ]
 
 // 入力欄の文字を数字に直す。空なら null、正しくなければ NaN
@@ -204,9 +204,9 @@ export default function MealPage() {
                     <span className="meal-name">{m.name}</span>
                     <span className="meal-detail">
                       {m.kcal}kcal
-                      {m.protein !== null && ` ・P${m.protein}g`}
-                      {m.fat !== null && ` ・F${m.fat}g`}
-                      {m.carbs !== null && ` ・C${m.carbs}g`}
+                      {m.protein !== null && ` ・たんぱく質${m.protein}g`}
+                      {m.fat !== null && ` ・脂質${m.fat}g`}
+                      {m.carbs !== null && ` ・炭水化物${m.carbs}g`}
                     </span>
                   </div>
                   <button type="button" className="meal-delete" onClick={() => handleDelete(m)}>
