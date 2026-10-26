@@ -25,6 +25,7 @@ export function runMets(speedKmh, inclinePct) {
 // 1件の記録の消費カロリー（体重が分からなければ null）
 export function workoutKcal(record, bodyKg) {
   if (!bodyKg) return null
+  if (record.cardio) return kcal(record.cardio.mets, bodyKg, record.cardio.minutes)
   if (record.run) {
     const { speedKmh, inclinePct, minutes } = record.run
     return kcal(runMets(speedKmh, inclinePct), bodyKg, minutes)

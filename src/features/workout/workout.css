@@ -174,3 +174,26 @@
   color: var(--danger);
   min-width: 56px;
 }
+
+/* セットの入力欄の上の名前（重さ・回数） */
+.set-labels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--sub);
+  margin-bottom: 4px;
+}
+
+/* 有酸素・スポーツの強さ */
+.cardio-level {
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+}

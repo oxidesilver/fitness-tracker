@@ -4,23 +4,19 @@ import { loadList, saveList } from '../../storage.js'
 const STORAGE_KEY = 'fitness-tracker.workouts'
 const EXERCISES_KEY = 'fitness-tracker.exercises'
 
-// 最初から一覧に並べる種目
-const DEFAULT_EXERCISES = ['ベンチプレス', 'スクワット', 'デッドリフト', 'ラットプルダウン', 'ショルダープレス', 'ランニング']
-
-// 速度・時間で記録する種目（それ以外はセットで記録する）
-export const RUN_EXERCISES = ['ランニング']
-
 // 記録の形
 // 筋トレ：{ id, date: '2026-10-25', exercise: 'ベンチプレス', sets: [{ weightKg: 55, reps: 10 }, ...] }
 //   weightKg が null のときは自重（重りなし）
 // ランニング：{ id, date, exercise: 'ランニング', run: { mode: 'machine' | 'outdoor', speedKmh, inclinePct, minutes, distanceKm } }
+// 有酸素など（時間で記録）：{ id, date, exercise: '水泳', cardio: { catalogId: 'swim', level: 1, minutes: 30, mets: 5.8 } }
+//   mets は記録したときの値を残す（あとで一覧の数字が変わっても、前の記録のカロリーが変わらないように）
 export function loadWorkouts() {
   return loadList(STORAGE_KEY).map(upgrade)
 }
 
 // 古い形 { weightKg, reps, sets: 3 } の記録を、1セットずつの形に直す
 function upgrade(r) {
-  if (r.run || Array.isArray(r.sets)) return r
+  if (r.run || r.cardio || Array.isArray(r.sets)) return r
   const { weightKg, reps, sets, ...rest } = r
   return { ...rest, sets: Array.from({ length: sets }, () => ({ weightKg, reps })) }
 }
@@ -42,17 +38,16 @@ export function deleteWorkout(id) {
   return records
 }
 
-// 一覧に並べる種目。よく記録している種目ほど前に来る。
-// 自分で足した種目だけを保存しておき、最初からある種目と合わせて並べる。
-export function loadExercises(records) {
-  const names = [...new Set([...DEFAULT_EXERCISES, ...loadList(EXERCISES_KEY), ...records.map((r) => r.exercise)])]
-  const count = (name) => records.filter((r) => r.exercise === name).length
-  return names.map((name, i) => ({ name, i })).sort((a, b) => count(b.name) - count(a.name) || a.i - b.i).map((x) => x.name)
+// よく記録している種目（多い順、limit 個まで）
+export function frequentExercises(records, limit = 5) {
+  const count = new Map()
+  for (const r of records) count.set(r.exercise, (count.get(r.exercise) ?? 0) + 1)
+  return [...count].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([name]) => name)
 }
 
-export function addExercise(name) {
-  const saved = loadList(EXERCISES_KEY)
-  if (!saved.includes(name) && !DEFAULT_EXERCISES.includes(name)) saveList(EXERCISES_KEY, [...saved, name])
+// 前の版で自分で足した種目の名前（記録や保存にあるもの）。一覧にないものだけを isKnown で外して使う
+export function legacyExerciseNames(records, isKnown) {
+  return [...new Set([...loadList(EXERCISES_KEY), ...records.map((r) => r.exercise)])].filter((n) => !isKnown(n))
 }
 
 // その種目の、いちばん最近の記録（なければ null）

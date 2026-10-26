@@ -1,58 +1,34 @@
-import { useState } from 'react'
+import { WORKOUT_GROUPS } from './workoutCatalog.js'
 
-const NEW_OPTION = '__new__'
-
-// 種目をプルダウンで選ぶ部品。一覧にない種目は「＋ 新しい種目を追加」から追加する。
-export default function ExercisePicker({ exercises, selected, onSelect, onAdd }) {
-  const [adding, setAdding] = useState(false)
-  const [name, setName] = useState('')
-
-  function handleChange(e) {
-    if (e.target.value === NEW_OPTION) {
-      setAdding(true)
-      onSelect('')
-    } else {
-      setAdding(false)
-      onSelect(e.target.value)
-    }
-  }
-
-  function handleAdd() {
-    const trimmed = name.trim()
-    if (!trimmed) return
-    onAdd(trimmed)
-    setName('')
-    setAdding(false)
-  }
-
+// 種目をプルダウンで選ぶ部品。自由入力はせず、一覧（workoutCatalog.js）から選ぶ。
+// いちばん上に「よく使う種目」、次に体の部位ごと・有酸素、最後に前の版で自分で足した種目を並べる。
+export default function ExercisePicker({ selected, onSelect, frequent, legacy }) {
   return (
     <div className="picker">
-      <select id="workout-exercise" value={adding ? NEW_OPTION : selected} onChange={handleChange}>
+      <select id="workout-exercise" value={selected} onChange={(e) => onSelect(e.target.value)}>
         <option value="" disabled>種目を選んでください</option>
-        {exercises.map((n) => (
-          <option key={n} value={n}>{n}</option>
+        {frequent.length > 0 && (
+          <optgroup label="よく使う種目">
+            {frequent.map((n) => (
+              <option key={`f-${n}`} value={n}>{n}</option>
+            ))}
+          </optgroup>
+        )}
+        {WORKOUT_GROUPS.map((g) => (
+          <optgroup key={g.group} label={g.group}>
+            {g.items.map((i) => (
+              <option key={i.name} value={i.name}>{i.name}</option>
+            ))}
+          </optgroup>
         ))}
-        <option value={NEW_OPTION}>＋ 新しい種目を追加</option>
+        {legacy.length > 0 && (
+          <optgroup label="前に追加した種目">
+            {legacy.map((n) => (
+              <option key={`l-${n}`} value={n}>{n}</option>
+            ))}
+          </optgroup>
+        )}
       </select>
-      {adding && (
-        <div className="picker-add">
-          <input
-            type="text"
-            placeholder="例：懸垂"
-            value={name}
-            autoFocus
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                handleAdd()
-              }
-            }}
-          />
-          <button type="button" className="picker-add-ok" onClick={handleAdd}>追加</button>
-          <button type="button" className="picker-add-cancel" onClick={() => { setAdding(false); setName('') }}>やめる</button>
-        </div>
-      )}
     </div>
   )
 }
