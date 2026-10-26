@@ -246,17 +246,6 @@
   color: var(--sub);
 }
 
-/* 食品成分表・写真の2つのボタン */
-.helper-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.helper-buttons .food-open {
-  margin-bottom: 0;
-}
 
 /* 写真から入れる */
 .photo-step {
@@ -307,4 +296,82 @@
 
 .food-search .primary:disabled {
   opacity: 0.5;
+}
+
+/* 入れ方の切り替え（選んで作る・栄養成分表示から） */
+.segment.meal-modes {
+  margin-bottom: 8px;
+}
+
+/* 献立の中身 */
+.meal-items {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.meal-items li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.meal-items li > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.meal-item-name {
+  font-weight: 600;
+}
+
+.meal-item-remove {
+  flex: none;
+  width: 44px;
+  background: transparent;
+  color: var(--sub);
+}
+
+.meal-items-total {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.meal-items-total strong {
+  font-size: 18px;
+}
+
+/* 食品・料理の追加：名前で探す／料理から選ぶ */
+.segment.food-tabs {
+  margin-bottom: 10px;
+}
+
+.food-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.food-categories button {
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.food-categories button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.food-categories + .food-results {
+  margin-top: 0;
 }

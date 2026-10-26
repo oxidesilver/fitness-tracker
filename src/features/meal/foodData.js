@@ -68,3 +68,37 @@ export function searchFoods(foods, query, limit = 30) {
     .sort((a, b) => a.name.length - b.name.length)
     .slice(0, limit)
 }
+
+// 画面に出す名前。分類（＜鳥肉類＞ など）を外す。料理（食品番号18〜）は「肉じゃが（和風料理）」の形にする
+export function displayName(food) {
+  if (food.code.startsWith('18')) {
+    const [category, , ...rest] = food.name.split(' ')
+    return `${rest.join(' ')}（${category}）`
+  }
+  return food.name.replace(/^＜[^＞]*＞\s*/, '')
+}
+
+// 料理（食品番号18〜）を「和風料理」「洋風料理」などのまとまりに分ける：[['和風料理', [食品, ...]], ...]
+export function dishGroups(foods) {
+  const groups = new Map()
+  for (const f of foods.filter((x) => x.code.startsWith('18'))) {
+    const category = f.name.split(' ')[0]
+    if (!groups.has(category)) groups.set(category, [])
+    groups.get(category).push(f)
+  }
+  return [...groups]
+}
+
+// 食品と量（g）から、その量のカロリーと栄養を出す（分からない値は null）
+export function scaleFood(food, grams) {
+  const scaled = (v) => (v === null ? null : Math.round((v * grams) / 10) / 10)
+  return {
+    code: food.code,
+    name: displayName(food),
+    grams,
+    kcal: Math.round((food.kcal * grams) / 100),
+    protein: scaled(food.protein),
+    fat: scaled(food.fat),
+    carbs: scaled(food.carbs),
+  }
+}
