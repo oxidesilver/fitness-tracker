@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { formatDate, today } from '../../storage.js'
 import { loadDailyTarget } from '../goal/target.js'
 import FoodSearch from './FoodSearch.jsx'
+import LabelScan from './LabelScan.jsx'
 import MyFoods from './MyFoods.jsx'
 import PhotoImport from './PhotoImport.jsx'
 import {
@@ -133,6 +134,14 @@ export default function MealPage() {
     setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
     setHelper(null)
     setSaved('')
+  }
+
+  // 栄養成分表示の写真から読んだ数字を入れる（名前は読めないので、入っている名前はそのまま）
+  function pickFromLabel(values) {
+    const text = (n) => (n === null ? '' : String(n))
+    setForm((f) => ({ ...f, kcal: text(values.kcal), protein: text(values.protein), fat: text(values.fat), carbs: text(values.carbs) }))
+    setSaved('')
+    setError('')
   }
 
   function addItem(item) {
@@ -304,6 +313,7 @@ export default function MealPage() {
             <p className="meal-help">
               お店で買ったお弁当・パン・お菓子などは、袋や箱の「栄養成分表示」の数字をそのまま入れるのがいちばん正確です。外食などで表示がないときは、写真から入れられます。
             </p>
+            <LabelScan onPick={pickFromLabel} />
             {helper === 'photo' ? (
               <PhotoImport onPick={pickFromPhoto} onClose={() => setHelper(null)} />
             ) : (

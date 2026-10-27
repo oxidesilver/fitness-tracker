@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { readImageText } from './ocr.js'
+import { readImageText } from '../../ocr.js'
 import { parseRunResult, parseRunScreenshot } from './runImport.js'
 
 // 「ランアプリの結果から入れる」：Nike Run Club などの結果画面のスクリーンショットを選ぶと、
