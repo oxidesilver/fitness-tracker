@@ -375,3 +375,91 @@
 .food-categories + .food-results {
   margin-top: 0;
 }
+
+/* 登録した食品 */
+.my-foods {
+  margin-bottom: 16px;
+}
+
+.my-foods-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.my-foods-edit {
+  background: transparent;
+  color: var(--accent);
+  min-height: 36px;
+  padding: 0 8px;
+}
+
+.my-foods-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.my-food {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 100%;
+  min-height: 52px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--accent);
+  text-align: left;
+}
+
+.my-food.removing {
+  border-color: var(--danger);
+  color: var(--danger);
+  justify-content: center;
+}
+
+.my-food-name {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.my-food-kcal {
+  font-size: 13px;
+  color: var(--sub);
+}
+
+.my-food-done {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.my-food-undo {
+  background: transparent;
+  color: var(--accent);
+  min-height: 36px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.meal-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.meal-register {
+  background: transparent;
+  color: var(--accent);
+  min-height: 40px;
+  padding: 0 4px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.meal-register.registered {
+  color: var(--sub);
+}
