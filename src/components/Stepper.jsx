@@ -7,7 +7,7 @@ import './Stepper.css'
 export default function Stepper({ value, onChange, step, unit, placeholder, inputMode = 'decimal', label, min = 0 }) {
   function bump(diff) {
     const n = String(value).trim() === '' ? Number(placeholder) || 0 : Number(value) || 0
-    const next = Math.max(min, Math.round((n + diff) * 10) / 10)
+    const next = Math.max(min, Math.round((n + diff) * 100) / 100)
     onChange(String(next))
   }
   return (
