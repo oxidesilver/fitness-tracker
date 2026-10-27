@@ -7,7 +7,7 @@ const EXERCISES_KEY = 'fitness-tracker.exercises'
 // 記録の形
 // 筋トレ：{ id, date: '2026-10-25', exercise: 'ベンチプレス', sets: [{ weightKg: 55, reps: 10 }, ...] }
 //   weightKg が null のときは自重（重りなし）
-// ランニング：{ id, date, exercise: 'ランニング', run: { mode: 'machine' | 'outdoor', speedKmh, inclinePct, minutes, distanceKm } }
+// ランニング：{ id, date, exercise: 'ランニング', run: { mode: 'machine' | 'outdoor', speedKmh, inclinePct, minutes, distanceKm, elevationM?, kcal? } }（kcal はアプリの消費カロリーを入れたときだけ）
 // 有酸素など（時間で記録）：{ id, date, exercise: '水泳', cardio: { catalogId: 'swim', level: 1, minutes: 30, mets: 5.8 } }
 //   mets は記録したときの値を残す（あとで一覧の数字が変わっても、前の記録のカロリーが変わらないように）
 export function loadWorkouts() {

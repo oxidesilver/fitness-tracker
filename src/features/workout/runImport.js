@@ -5,7 +5,7 @@
 // 時間の形（'56:49'・'1:05:12'）
 const TIME = /(?:(\d+):)?(\d{1,2}):(\d{2})(?!\d)/g
 
-// { distance, minutes, seconds, elevation }（文字のまま）を返す。距離か時間が見つからなければ null
+// { distance, minutes, seconds, elevation, kcal }（文字のまま）を返す。距離か時間が見つからなければ null
 export function parseRunResult(text) {
   const t = text.normalize('NFKC')
 
@@ -23,6 +23,9 @@ export function parseRunResult(text) {
   // 上りの高低差：'116 m'（'km' は除く）
   const elev = t.match(/(\d+(?:\.\d+)?)[ \t]*m(?![a-z])/i)
 
+  // 消費カロリー：'419\n消費カロリー'・'419 kcal'
+  const kcal = t.match(/(\d+(?:\.\d+)?)\s*(?:kcal|(?:消費)?カロリー)/i)
+
   if (!dist || !time) return null
   const [, h, m, s] = time.m
   return {
@@ -30,5 +33,6 @@ export function parseRunResult(text) {
     minutes: String(Number(h ?? 0) * 60 + Number(m)),
     seconds: String(Number(s)),
     elevation: elev ? elev[1] : '',
+    kcal: kcal ? kcal[1] : '',
   }
 }
