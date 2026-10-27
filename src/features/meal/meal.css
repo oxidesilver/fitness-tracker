@@ -463,3 +463,30 @@
 .meal-register.registered {
   color: var(--sub);
 }
+
+/* 栄養成分表示を撮って入れる */
+.label-scan {
+  margin-bottom: 12px;
+}
+
+.label-scan-pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  margin: 0 0 8px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.label-scan-pick.disabled {
+  opacity: 0.6;
+}
+
+.label-scan .meal-saved {
+  margin: 0 0 8px;
+}

@@ -9,7 +9,8 @@ const files = [
   ['node_modules/tesseract.js/dist/worker.min.js', 'worker.min.js'],
   ['node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js', 'tesseract-core-lstm.wasm.js'],
   ['node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js', 'tesseract-core-simd-lstm.wasm.js'],
-  // 英語の文字のデータ（数字と km・m を読めればよいので、小さい英語のものを使う）
+  // 文字のデータ。英語（ランアプリの結果）と日本語（栄養成分表示）。使う方だけ読み込む
   ['node_modules/@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz', 'eng.traineddata.gz'],
+  ['node_modules/@tesseract.js-data/jpn/4.0.0_best_int/jpn.traineddata.gz', 'jpn.traineddata.gz'],
 ]
 for (const [from, to] of files) copyFileSync(from, `${out}/${to}`)

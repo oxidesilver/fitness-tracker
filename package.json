@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@tesseract.js-data/eng": "^1.0.0",
+    "@tesseract.js-data/jpn": "^1.0.0",
     "@vitejs/plugin-react": "^6.1.2",
     "vite": "^8.3.5"
   }
