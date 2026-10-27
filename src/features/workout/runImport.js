@@ -36,3 +36,39 @@ export function parseRunResult(text) {
     kcal: kcal ? kcal[1] : '',
   }
 }
+
+// スクリーンショットを読み取った文字から、距離・時間・消費カロリー・上りの高低差を取り出す。
+// 英語の文字として読むので、日本語の「時間」などは読めない。そのため画面の並びで決める：
+// いちばん上の大きな数字＝距離、その下の「ペース 時間 消費カロリー」の行、'116 m'＝上りの高低差
+export function parseRunScreenshot(text) {
+  const withLabels = parseRunResult(text)
+  if (withLabels?.kcal) return withLabels
+
+  const lines = text
+    .normalize('NFKC')
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean)
+  const distIndex = lines.findIndex((l) => /^\d{1,3}[.,]\d{1,2}(?!\d)/.test(l))
+  if (distIndex < 0) return withLabels
+  const distance = lines[distIndex].match(/^\d{1,3}[.,]\d{1,2}/)[0].replace(',', '.')
+
+  // 距離より下で、時間の形（56:49）がある最初の行
+  const rest = lines.slice(distIndex + 1)
+  const statsIndex = rest.findIndex((l) => /\d:\d{2}/.test(l))
+  if (statsIndex < 0) return withLabels
+  const stats = rest[statsIndex]
+  const time = [...stats.matchAll(TIME)][0]
+  const [, h, m, s] = time
+  // 時間のすぐ後ろの数字が消費カロリー
+  const kcal = stats.slice(time.index + time[0].length).match(/\d+/)
+  const elev = rest.slice(statsIndex + 1).join('\n').match(/(\d+(?:\.\d+)?)[ \t]*m(?![a-z])/i)
+
+  return {
+    distance,
+    minutes: String(Number(h ?? 0) * 60 + Number(m)),
+    seconds: String(Number(s)),
+    elevation: elev ? elev[1] : '',
+    kcal: kcal ? kcal[0] : '',
+  }
+}

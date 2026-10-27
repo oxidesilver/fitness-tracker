@@ -438,3 +438,28 @@
 .run-import .primary:disabled {
   opacity: 0.5;
 }
+
+.run-import-pick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  margin: 0 0 12px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.run-import-pick.disabled {
+  opacity: 0.6;
+}
+
+.run-import-text-box summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+}
