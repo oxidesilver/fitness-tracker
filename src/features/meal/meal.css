@@ -490,3 +490,24 @@
 .label-scan .meal-saved {
   margin: 0 0 8px;
 }
+
+/* 料理のひな形の材料 */
+.recipe-items {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.recipe-items li {
+  margin-bottom: 8px;
+}
+
+.recipe-item-name {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.recipe-items .stepper {
+  margin-bottom: 0;
+}

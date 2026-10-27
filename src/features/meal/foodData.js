@@ -179,3 +179,22 @@ export function scaleFood(food, grams) {
     carbs: scaled(food.carbs),
   }
 }
+
+// 料理のひな形（recipes.js）を、言葉で探す。名前か別の呼び方に言葉が入っているもの
+export function searchRecipes(recipes, query) {
+  const q = normalize(query.trim())
+  if (!q) return []
+  return recipes.filter((r) => [r.name, ...(r.aliases ?? [])].some((n) => normalize(n).includes(q)))
+}
+
+// ひな形の材料を、量（g）に合わせた献立の品にする。grams は材料ごとの量（なければひな形の量）
+export function recipeItems(recipe, foods, grams = recipe.items.map(([, g]) => g)) {
+  const byCode = new Map(foods.map((f) => [f.code, f]))
+  return recipe.items
+    .map(([code, , label], i) => {
+      const food = byCode.get(code)
+      const g = Number(grams[i])
+      return food && g > 0 ? { ...scaleFood(food, g), name: label } : null
+    })
+    .filter(Boolean)
+}
