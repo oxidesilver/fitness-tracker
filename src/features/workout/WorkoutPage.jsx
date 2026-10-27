@@ -14,7 +14,7 @@ import { addWorkout, deleteWorkout, frequentExercises, lastWorkout, legacyExerci
 import './workout.css'
 
 const EMPTY_SET = { weight: '', reps: '10' }
-const EMPTY_RUN = { mode: 'machine', speed: '', incline: '', distance: '', minutes: '', seconds: '', elevation: '' }
+const EMPTY_RUN = { mode: 'machine', speed: '', incline: '', distance: '', minutes: '', seconds: '', elevation: '', kcal: '' }
 
 // 分（小数）を '56分49秒' の形に。秒がなければ '30分'
 function formatMinutes(minutes) {
@@ -104,6 +104,7 @@ export default function WorkoutPage() {
           minutes: String(Math.floor(totalSec / 60)),
           seconds: totalSec % 60 ? String(totalSec % 60) : '',
           elevation: elevationM ? String(elevationM) : '',
+          kcal: '', // 消費カロリーはその日ごとに違うので、前回の数字は入れない
         })
       } else setRun(EMPTY_RUN)
     } else if (next.kind === 'cardio') {
@@ -145,6 +146,8 @@ export default function WorkoutPage() {
     if (!minutes) return noMinutes
     const elevationM = run.elevation.trim() === '' ? 0 : toNumber(run.elevation, { max: 10000 })
     if (elevationM === null) return '上りの高低差を正しく入れてください（分からなければ空のまま）'
+    const kcal = run.kcal.trim() === '' ? null : toNumber(run.kcal, { min: 1, max: 10000 })
+    if (kcal === null && run.kcal.trim() !== '') return '消費カロリーを正しく入れてください（分からなければ空のまま）'
     // 上った高さ ÷ 走った距離を、平均の傾斜として計算に使う（下りの分は数えない）
     const inclinePct = Math.round((elevationM / (distanceKm * 1000)) * 10000) / 100
     return {
@@ -154,6 +157,7 @@ export default function WorkoutPage() {
       minutes,
       distanceKm,
       ...(elevationM ? { elevationM } : {}),
+      ...(kcal ? { kcal: Math.round(kcal) } : {}),
     }
   }
 
@@ -258,7 +262,11 @@ export default function WorkoutPage() {
                       <div className="workout-item">
                         <span className="workout-name">{r.exercise}</span>
                         <span className="workout-detail">{describe(r)}</span>
-                        {kcals[i] !== null && <span className="workout-kcal">約{Math.round(kcals[i])} kcal</span>}
+                        {kcals[i] !== null && (
+                          <span className="workout-kcal">
+                            {r.run?.kcal ? `${r.run.kcal} kcal（アプリの数字）` : `約${Math.round(kcals[i])} kcal`}
+                          </span>
+                        )}
                       </div>
                       <button type="button" className="workout-delete" onClick={() => handleDelete(r)}>
                         消す

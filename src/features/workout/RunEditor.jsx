@@ -53,6 +53,9 @@ export default function RunEditor({ run, onChange }) {
           <label>上りの高低差（m・分かれば）</label>
           <Stepper label="上りの高低差" value={run.elevation} onChange={set('elevation')} step={10} unit="m" placeholder="0" inputMode="numeric" />
           <p className="run-note">坂を上った分も消費カロリーに入れます。アプリの「高低差（上り）」の数字です。</p>
+          <label>消費カロリー（アプリの数字・分かれば）</label>
+          <Stepper label="消費カロリー" value={run.kcal} onChange={set('kcal')} step={10} unit="kcal" placeholder="" inputMode="numeric" />
+          <p className="run-note">入れるとこの数字を使います。空ならこのアプリで計算します。</p>
         </>
       )}
     </div>

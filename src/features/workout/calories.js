@@ -23,7 +23,9 @@ export function runMets(speedKmh, inclinePct) {
 }
 
 // 1件の記録の消費カロリー（体重が分からなければ null）
+// ランニングでアプリ（Nike Run Club など）の消費カロリーを入れたときは、その数字を使う
 export function workoutKcal(record, bodyKg) {
+  if (record.run?.kcal) return record.run.kcal
   if (!bodyKg) return null
   if (record.cardio) return kcal(record.cardio.mets, bodyKg, record.cardio.minutes)
   if (record.run) {
