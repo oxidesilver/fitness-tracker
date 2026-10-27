@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
 import Stepper from '../../components/Stepper.jsx'
-import { FOOD_SOURCE, FOOD_SOURCE_URL, dishGroups, displayName, loadFoods, scaleFood, searchFoods } from './foodData.js'
+import { FOOD_SOURCE, FOOD_SOURCE_URL, dishGroups, displayName, loadFoods, scaleFood, searchFoods, searchRecipes } from './foodData.js'
+import RecipeDetail from './RecipeDetail.jsx'
+import { RECIPES, RECIPE_GROUP } from './recipes.js'
 
 // 食品成分表から食品や料理を選び、食べた量（g）を入れて、献立に追加する部品。
-// 「探す」（名前で探す）と「料理から選ぶ」（和風料理・洋風料理などの一覧）を切り替えられる。
-// onAdd には scaleFood の戻り値 { code, name, grams, kcal, protein, fat, carbs } を渡す。続けて追加できる
-export default function FoodSearch({ onAdd, onClose }) {
+// 「探す」（名前で探す）と「料理から選ぶ」（定番の料理のひな形・和風料理・洋風料理などの一覧）を切り替えられる。
+// onAdd には scaleFood の戻り値 { code, name, grams, kcal, protein, fat, carbs } を渡す。続けて追加できる。
+// ひな形を選んだときは、材料を1品ずつ onAdd に渡し、料理の名前を onRecipe に渡す
+export default function FoodSearch({ onAdd, onRecipe, onClose }) {
   const [foods, setFoods] = useState(null)
   const [loadError, setLoadError] = useState('')
   const [tab, setTab] = useState('search')
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState(null)
   const [food, setFood] = useState(null)
+  const [recipe, setRecipe] = useState(null)
   const [grams, setGrams] = useState('100')
   const [added, setAdded] = useState('')
 
@@ -20,6 +24,7 @@ export default function FoodSearch({ onAdd, onClose }) {
   }, [])
 
   const results = foods ? searchFoods(foods, query) : []
+  const recipeResults = searchRecipes(RECIPES, query)
   const groups = foods ? dishGroups(foods) : []
   const g = Number(grams)
   const preview = food && g > 0 ? scaleFood(food, g) : null
@@ -37,6 +42,27 @@ export default function FoodSearch({ onAdd, onClose }) {
     setFood(null)
     setQuery('')
   }
+
+  function addRecipe(items) {
+    items.forEach(onAdd)
+    onRecipe?.(recipe.name)
+    setAdded(`${recipe.name}（${items.length}品）を追加しました。続けて追加できます。`)
+    setRecipe(null)
+    setQuery('')
+  }
+
+  const recipeList = (items) => (
+    <ul className="food-results">
+      {items.map((r) => (
+        <li key={r.id}>
+          <button type="button" onClick={() => { setRecipe(r); setAdded('') }}>
+            <span>{r.name}</span>
+            <span className="food-kcal">ひな形・{r.items.length}品</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
 
   const list = (items) => (
     <ul className="food-results">
@@ -58,7 +84,9 @@ export default function FoodSearch({ onAdd, onClose }) {
         <button type="button" className="food-close" onClick={onClose}>閉じる</button>
       </div>
 
-      {food ? (
+      {recipe && foods ? (
+        <RecipeDetail key={recipe.id} recipe={recipe} foods={foods} onAdd={addRecipe} onBack={() => setRecipe(null)} />
+      ) : food ? (
         <>
           <p className="food-picked">{displayName(food)}</p>
           <label>食べた量（g）</label>
@@ -94,7 +122,8 @@ export default function FoodSearch({ onAdd, onClose }) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              {foods && query.trim() && results.length === 0 && (
+              {foods && recipeResults.length > 0 && recipeList(recipeResults)}
+              {foods && query.trim() && results.length === 0 && recipeResults.length === 0 && (
                 <p className="meal-help">
                   見つかりませんでした。別の呼び方や、短い言葉でも探してみてください。
                   国の成分表にない料理は、材料を1つずつ足すと作れます（例：タコライス＝ご飯・ひき肉・レタス・トマト・チーズ）。よく食べるなら、記録したあとに「☆ 登録」しておくと次から1回で入ります。
@@ -107,13 +136,25 @@ export default function FoodSearch({ onAdd, onClose }) {
           {tab === 'dish' && foods && (
             <>
               <div className="food-categories">
+                <button type="button" className={category === RECIPE_GROUP ? 'active' : ''} onClick={() => setCategory(RECIPE_GROUP)}>
+                  {RECIPE_GROUP}（{RECIPES.length}）
+                </button>
                 {groups.map(([name, items]) => (
                   <button key={name} type="button" className={category === name ? 'active' : ''} onClick={() => setCategory(name)}>
                     {name}（{items.length}）
                   </button>
                 ))}
               </div>
-              {category ? list(groups.find(([name]) => name === category)?.[1] ?? []) : <p className="meal-help">上から料理の種類を選んでください。量は100gあたりで出ています。</p>}
+              {category === RECIPE_GROUP ? (
+                <>
+                  <p className="meal-help">国の成分表の材料を組み合わせた、1人分の目安です。選ぶと材料ごとに量を直せます。</p>
+                  {recipeList(RECIPES)}
+                </>
+              ) : category ? (
+                list(groups.find(([name]) => name === category)?.[1] ?? [])
+              ) : (
+                <p className="meal-help">上から料理の種類を選んでください。成分表の料理は100gあたりで出ています。</p>
+              )}
             </>
           )}
         </>

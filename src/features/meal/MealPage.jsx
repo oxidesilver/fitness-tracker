@@ -72,6 +72,8 @@ export default function MealPage() {
   const [mode, setMode] = useState('build')
   // 献立（選んで作る）の中身：[{ code, name, grams, kcal, protein, fat, carbs }]
   const [items, setItems] = useState([])
+  // 献立に入れた料理のひな形の名前（名前を空にしたときの自動の名前に使う：'タコライス・豆腐とわかめのみそ汁'）
+  const [recipeNames, setRecipeNames] = useState([])
   // 開いている入力の手伝い：'table'（食品・料理を追加）・'photo'（写真）・null
   const [helper, setHelper] = useState(null)
   const [myFoods, setMyFoods] = useState(loadMyFoods)
@@ -81,6 +83,7 @@ export default function MealPage() {
   const dayMeals = records.filter((r) => r.date === date)
   const total = sumOf(dayMeals)
   const foods = frequentFoods(records)
+  const autoName = recipeNames.length ? [...new Set(recipeNames)].join('・') : itemsName(items)
 
   function update(field, value) {
     setForm({ ...form, [field]: value })
@@ -119,12 +122,14 @@ export default function MealPage() {
     if (food.items?.length) {
       setMode('build')
       setItems(food.items)
+      setRecipeNames([])
       setForm({ ...EMPTY_FORM, name: food.name })
       return
     }
     const text = (n) => (n === null || n === undefined ? '' : String(n))
     setMode('label')
     setItems([])
+    setRecipeNames([])
     setForm({ name: food.name, kcal: text(food.kcal), protein: text(food.protein), fat: text(food.fat), carbs: text(food.carbs) })
   }
 
@@ -167,7 +172,7 @@ export default function MealPage() {
     let record
     if (mode === 'build') {
       if (items.length === 0) return setError('「＋ 食品・料理を追加」から、食べたものを選んでください')
-      const name = form.name.trim() || itemsName(items)
+      const name = form.name.trim() || autoName
       record = { date, time, name, ...itemsTotal(items), items }
     } else {
       const name = form.name.trim()
@@ -186,6 +191,7 @@ export default function MealPage() {
     setQuick(null)
     setForm(EMPTY_FORM)
     setItems([])
+    setRecipeNames([])
     setHelper(null)
     setError('')
     setSaved(`${record.name}を記録しました`)
@@ -293,7 +299,11 @@ export default function MealPage() {
               </ul>
             )}
             {helper === 'table' ? (
-              <FoodSearch onAdd={addItem} onClose={() => setHelper(null)} />
+              <FoodSearch
+                onAdd={addItem}
+                onRecipe={(name) => setRecipeNames((list) => [...list, name])}
+                onClose={() => setHelper(null)}
+              />
             ) : (
               <button type="button" className="food-open" onClick={() => setHelper('table')}>＋ 食品・料理を追加</button>
             )}
@@ -304,7 +314,7 @@ export default function MealPage() {
                   ・たんぱく質{itemsTotal(items).protein}g・脂質{itemsTotal(items).fat}g・炭水化物{itemsTotal(items).carbs}g
                 </p>
                 <label htmlFor="meal-name">名前（空なら自動でつけます）</label>
-                <input id="meal-name" type="text" placeholder={itemsName(items)} value={form.name} onChange={(e) => update('name', e.target.value)} />
+                <input id="meal-name" type="text" placeholder={autoName} value={form.name} onChange={(e) => update('name', e.target.value)} />
               </>
             )}
           </>
