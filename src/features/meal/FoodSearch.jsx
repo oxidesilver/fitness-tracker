@@ -95,7 +95,10 @@ export default function FoodSearch({ onAdd, onClose }) {
                 onChange={(e) => setQuery(e.target.value)}
               />
               {foods && query.trim() && results.length === 0 && (
-                <p className="meal-help">見つかりませんでした。ひらがな・カタカナや、別の呼び方でも探してみてください。言葉を短くすると見つかりやすくなります。</p>
+                <p className="meal-help">
+                  見つかりませんでした。別の呼び方や、短い言葉でも探してみてください。
+                  国の成分表にない料理は、材料を1つずつ足すと作れます（例：タコライス＝ご飯・ひき肉・レタス・トマト・チーズ）。よく食べるなら、記録したあとに「☆ 登録」しておくと次から1回で入ります。
+                </p>
               )}
               {results.length > 0 && list(results)}
             </>
