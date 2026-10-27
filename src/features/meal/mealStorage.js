@@ -51,3 +51,25 @@ export function defaultMealTime(hour = new Date().getHours()) {
   if (hour >= 17 && hour < 23) return 'dinner'
   return 'snack'
 }
+
+// 登録した食品（プロテインなど、同じものをくり返し食べるときにタップ1回で記録する）
+// 形：{ name, kcal, protein, fat, carbs, items? }。同じ名前は1つだけ。並びは登録した順
+const MY_FOODS_KEY = 'fitness-tracker.myFoods'
+
+export function loadMyFoods() {
+  return loadList(MY_FOODS_KEY)
+}
+
+export function addMyFood(meal) {
+  const { name, kcal, protein, fat, carbs, items } = meal
+  const food = { name, kcal, protein, fat, carbs, ...(items?.length ? { items } : {}) }
+  const list = [...loadMyFoods().filter((f) => f.name !== name), food]
+  saveList(MY_FOODS_KEY, list)
+  return list
+}
+
+export function removeMyFood(name) {
+  const list = loadMyFoods().filter((f) => f.name !== name)
+  saveList(MY_FOODS_KEY, list)
+  return list
+}

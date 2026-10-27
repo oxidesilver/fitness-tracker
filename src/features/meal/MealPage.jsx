@@ -2,8 +2,19 @@ import { useState } from 'react'
 import { formatDate, today } from '../../storage.js'
 import { loadDailyTarget } from '../goal/target.js'
 import FoodSearch from './FoodSearch.jsx'
+import MyFoods from './MyFoods.jsx'
 import PhotoImport from './PhotoImport.jsx'
-import { MEAL_TIMES, addMeal, defaultMealTime, deleteMeal, frequentFoods, loadMeals } from './mealStorage.js'
+import {
+  MEAL_TIMES,
+  addMeal,
+  addMyFood,
+  defaultMealTime,
+  deleteMeal,
+  frequentFoods,
+  loadMeals,
+  loadMyFoods,
+  removeMyFood,
+} from './mealStorage.js'
 import './meal.css'
 
 const EMPTY_FORM = { name: '', kcal: '', protein: '', fat: '', carbs: '' }
@@ -62,6 +73,9 @@ export default function MealPage() {
   const [items, setItems] = useState([])
   // 開いている入力の手伝い：'table'（食品・料理を追加）・'photo'（写真）・null
   const [helper, setHelper] = useState(null)
+  const [myFoods, setMyFoods] = useState(loadMyFoods)
+  // 登録した食品をタップして記録したもの（取り消しに使う）
+  const [quick, setQuick] = useState(null)
 
   const dayMeals = records.filter((r) => r.date === date)
   const total = sumOf(dayMeals)
@@ -70,6 +84,29 @@ export default function MealPage() {
   function update(field, value) {
     setForm({ ...form, [field]: value })
     setSaved('')
+  }
+
+  // 登録した食品をタップしたら、選んでいる日付・いつで、すぐに記録する
+  function recordMyFood(food) {
+    const { name, kcal, protein, fat, carbs, items } = food
+    const next = addMeal({ date, time, name, kcal, protein, fat, carbs, ...(items ? { items } : {}) })
+    setRecords(next)
+    setQuick(next[next.length - 1])
+    setSaved('')
+    setError('')
+  }
+
+  function undoQuick() {
+    setRecords(deleteMeal(quick.id))
+    setQuick(null)
+  }
+
+  function toggleMyFood(meal) {
+    if (myFoods.some((f) => f.name === meal.name)) {
+      if (confirm(`「${meal.name}」の登録を外しますか？（これまでの記録は消えません）`)) setMyFoods(removeMyFood(meal.name))
+    } else {
+      setMyFoods(addMyFood(meal))
+    }
   }
 
   // よく食べるものを選ぶ。献立で作った食事なら献立ごと、そうでなければ数字を入れる
@@ -137,6 +174,7 @@ export default function MealPage() {
     }
 
     setRecords(addMeal(record))
+    setQuick(null)
     setForm(EMPTY_FORM)
     setItems([])
     setHelper(null)
@@ -200,6 +238,14 @@ export default function MealPage() {
             </button>
           ))}
         </div>
+
+        <MyFoods foods={myFoods} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
+        {quick && (
+          <p className="meal-saved my-food-done">
+            ✓ {quick.name}を{MEAL_TIMES.find((t) => t.id === quick.time).label}に記録しました
+            <button type="button" className="my-food-undo" onClick={undoQuick}>取り消す</button>
+          </p>
+        )}
 
         {foods.length > 0 && (
           <>
@@ -312,9 +358,18 @@ export default function MealPage() {
                       {m.carbs !== null && ` ・炭水化物${m.carbs}g`}
                     </span>
                   </div>
-                  <button type="button" className="meal-delete" onClick={() => handleDelete(m)}>
-                    消す
-                  </button>
+                  <div className="meal-actions">
+                    <button
+                      type="button"
+                      className={myFoods.some((f) => f.name === m.name) ? 'meal-register registered' : 'meal-register'}
+                      onClick={() => toggleMyFood(m)}
+                    >
+                      {myFoods.some((f) => f.name === m.name) ? '★ 登録済み' : '☆ 登録'}
+                    </button>
+                    <button type="button" className="meal-delete" onClick={() => handleDelete(m)}>
+                      消す
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
