@@ -372,3 +372,69 @@
   min-height: 44px;
   line-height: 1.2;
 }
+
+.run-note {
+  margin: -4px 0 12px;
+  font-size: 13px;
+  color: var(--sub);
+}
+
+/* ランニングアプリの結果から入れる */
+.run-import-open {
+  width: 100%;
+  margin-bottom: 16px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+}
+
+.run-import {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+}
+
+.run-import-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.run-import-close {
+  background: transparent;
+  color: var(--sub);
+  min-height: 40px;
+  padding: 0 4px;
+}
+
+.run-import-steps {
+  margin: 8px 0 12px;
+  padding-left: 1.4em;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.run-import-paste {
+  width: 100%;
+  margin-bottom: 8px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.run-import-text {
+  width: 100%;
+  margin-bottom: 12px;
+  font-size: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+}
+
+.run-import .primary:disabled {
+  opacity: 0.5;
+}

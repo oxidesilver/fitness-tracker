@@ -14,7 +14,15 @@ import { addWorkout, deleteWorkout, frequentExercises, lastWorkout, legacyExerci
 import './workout.css'
 
 const EMPTY_SET = { weight: '', reps: '10' }
-const EMPTY_RUN = { mode: 'machine', speed: '', incline: '', distance: '', minutes: '' }
+const EMPTY_RUN = { mode: 'machine', speed: '', incline: '', distance: '', minutes: '', seconds: '', elevation: '' }
+
+// 分（小数）を '56分49秒' の形に。秒がなければ '30分'
+function formatMinutes(minutes) {
+  const total = Math.round(minutes * 60)
+  const m = Math.floor(total / 60)
+  const s = total % 60
+  return s ? `${m}分${s}秒` : `${m}分`
+}
 
 const round1 = (n) => Math.round(n * 10) / 10
 
@@ -33,10 +41,10 @@ function describe(r) {
     return `${level ? `${level.label}・` : ''}${r.cardio.minutes}分`
   }
   if (r.run) {
-    const { mode, speedKmh, inclinePct, minutes, distanceKm } = r.run
+    const { mode, speedKmh, inclinePct, minutes, distanceKm, elevationM } = r.run
     return mode === 'machine'
-      ? `時速${speedKmh}km・傾斜${inclinePct}%・${minutes}分（${distanceKm}km）`
-      : `${distanceKm}km・${minutes}分（時速${speedKmh}km）`
+      ? `時速${speedKmh}km・傾斜${inclinePct}%・${formatMinutes(minutes)}（${distanceKm}km）`
+      : `${distanceKm}km・${formatMinutes(minutes)}（時速${speedKmh}km${elevationM ? `・上り${elevationM}m` : ''}）`
   }
   const bodyweight = workoutInfo(r.exercise).equipment === 'bodyweight'
   return r.sets.map((s) => describeSet(s, bodyweight)).join(' / ')
@@ -86,8 +94,17 @@ export default function WorkoutPage() {
     const last = lastWorkout(records, name)
     if (next.kind === 'run') {
       if (last?.run) {
-        const { mode, speedKmh, inclinePct, minutes, distanceKm } = last.run
-        setRun({ mode, speed: String(speedKmh), incline: String(inclinePct), distance: String(distanceKm), minutes: String(minutes) })
+        const { mode, speedKmh, inclinePct, minutes, distanceKm, elevationM } = last.run
+        const totalSec = Math.round(minutes * 60)
+        setRun({
+          mode,
+          speed: String(speedKmh),
+          incline: mode === 'machine' ? String(inclinePct) : '',
+          distance: String(distanceKm),
+          minutes: String(Math.floor(totalSec / 60)),
+          seconds: totalSec % 60 ? String(totalSec % 60) : '',
+          elevation: elevationM ? String(elevationM) : '',
+        })
       } else setRun(EMPTY_RUN)
     } else if (next.kind === 'cardio') {
       setCardio(last?.cardio ? { level: last.cardio.level, minutes: String(last.cardio.minutes) } : { level: findExercise(next.catalogId).default, minutes: '30' })
@@ -110,7 +127,10 @@ export default function WorkoutPage() {
 
   // ランニングの入力を記録の形に直す。おかしければエラーの文を返す
   function parseRun() {
-    const minutes = toNumber(run.minutes, { max: 1440 })
+    const min = toNumber(run.minutes, { max: 1440 })
+    const sec = run.seconds.trim() === '' ? 0 : toNumber(run.seconds, { max: 60 })
+    if (sec === null) return '秒は0〜59で入れてください'
+    const minutes = min === null ? null : Math.round((min + sec / 60) * 100) / 100
     const noMinutes = '時間（分）を入れてください'
     if (run.mode === 'machine') {
       const speedKmh = toNumber(run.speed, { max: 40 })
@@ -123,7 +143,18 @@ export default function WorkoutPage() {
     const distanceKm = toNumber(run.distance, { max: 500 })
     if (!distanceKm) return '距離を入れてください（例：5）'
     if (!minutes) return noMinutes
-    return { mode: 'outdoor', speedKmh: round1(distanceKm / (minutes / 60)), inclinePct: 0, minutes, distanceKm }
+    const elevationM = run.elevation.trim() === '' ? 0 : toNumber(run.elevation, { max: 10000 })
+    if (elevationM === null) return '上りの高低差を正しく入れてください（分からなければ空のまま）'
+    // 上った高さ ÷ 走った距離を、平均の傾斜として計算に使う（下りの分は数えない）
+    const inclinePct = Math.round((elevationM / (distanceKm * 1000)) * 10000) / 100
+    return {
+      mode: 'outdoor',
+      speedKmh: round1(distanceKm / (minutes / 60)),
+      inclinePct,
+      minutes,
+      distanceKm,
+      ...(elevationM ? { elevationM } : {}),
+    }
   }
 
   function handleSubmit(e) {
