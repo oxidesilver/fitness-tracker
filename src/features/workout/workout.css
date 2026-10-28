@@ -497,3 +497,26 @@
   font-weight: 600;
   margin: 0 0 8px;
 }
+
+/* おすすめメニューのやり方（全身法・2分割・3分割・4分割）と、分割の日 */
+.segment.recommend-styles,
+.segment.recommend-days {
+  margin: 12px 0;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.segment.recommend-days.days-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.segment.recommend-days.days-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.segment.recommend-styles button,
+.segment.recommend-days button {
+  min-height: 44px;
+  line-height: 1.2;
+  padding: 0 2px;
+  font-size: 15px;
+}

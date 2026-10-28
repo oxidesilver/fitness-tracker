@@ -1,12 +1,24 @@
 import { useState } from 'react'
 import { loadExercisePlan } from '../goal/exercisePlan.js'
 import ExerciseGuide from './ExerciseGuide.jsx'
-import { MINUTES_PER_EXERCISE, PLACES, SPLIT_DAYS, STYLES, nextSplitDay, recommendMenu, recommendedStyle, strengthMinutes } from './recommend.js'
+import {
+  EQUIPMENT_PREFS,
+  MINUTES_PER_EXERCISE,
+  PLACES,
+  STYLES,
+  nextSplitDay,
+  normalizeStyle,
+  recommendMenu,
+  recommendedStyle,
+  strengthMinutes,
+} from './recommend.js'
 import { GUIDE } from './workoutGuide.js'
 
 const PLACE_KEY = 'fitness-tracker.trainingPlace'
 // 全身法・分割法を自分で選んだときだけ覚える（選んでいなければ、週の回数から自動で決める）
 const STYLE_KEY = 'fitness-tracker.trainingStyle'
+// ジムで BIG3（フリーウェイト）とマシンのどちらを先にするか
+const PREF_KEY = 'fitness-tracker.trainingEquipment'
 
 function loadSetting(key) {
   try {
@@ -31,12 +43,17 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
   const [place, setPlace] = useState(() => (loadSetting(PLACE_KEY) === 'home' ? 'home' : 'gym'))
   const [plan] = useState(loadExercisePlan)
   const autoStyle = recommendedStyle(plan.sessions)
-  const [style, setStyle] = useState(() => {
-    const saved = loadSetting(STYLE_KEY)
-    return saved === 'full' || saved === 'split' ? saved : autoStyle
-  })
-  const [splitDay, setSplitDay] = useState(() => nextSplitDay(records, GUIDE))
+  const [savedStyle, setSavedStyle] = useState(() => normalizeStyle(loadSetting(STYLE_KEY)))
+  const [pref, setPref] = useState(() => (loadSetting(PREF_KEY) === 'machine' ? 'machine' : 'free'))
+  const [pickedDay, setPickedDay] = useState(null)
   const [open, setOpen] = useState(null)
+
+  // 自宅では4分割を選べない（肩だけの自重の種目がないため）。そのときは3分割にする
+  const wanted = savedStyle ?? autoStyle
+  const style = place === 'home' && wanted === 'split4' ? 'split3' : wanted
+  const styleInfo = STYLES.find((st) => st.id === style)
+  const nextDay = nextSplitDay(records, GUIDE, style)
+  const day = styleInfo.days.some((d) => d.id === pickedDay) ? pickedDay : style === 'full' ? 'full' : nextDay
 
   function changePlace(id) {
     setPlace(id)
@@ -45,14 +62,20 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
   }
 
   function changeStyle(id) {
-    setStyle(id)
+    setSavedStyle(id)
+    setPickedDay(null)
     setOpen(null)
     saveSetting(STYLE_KEY, id)
   }
 
+  function changePref(id) {
+    setPref(id)
+    setOpen(null)
+    saveSetting(PREF_KEY, id)
+  }
+
   const { minutes, fromPlan } = strengthMinutes(plan, bodyKg)
-  const day = style === 'split' ? splitDay : 'full'
-  const menu = recommendMenu({ place, day, minutes, records, bodyKg, sex })
+  const menu = recommendMenu({ place, pref, day, minutes, records, bodyKg, sex })
   const total = menu.reduce((a, m) => a + m.minutes, 0)
 
   return (
@@ -70,8 +93,26 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
         ))}
       </div>
 
-      <div className="segment recommend-place" role="group" aria-label="やり方">
-        {STYLES.map((st) => (
+      {place === 'gym' && (
+        <>
+          <div className="segment recommend-place" role="group" aria-label="種目の選び方">
+            {EQUIPMENT_PREFS.map((e) => (
+              <button key={e.id} type="button" className={pref === e.id ? 'active' : ''} onClick={() => changePref(e.id)}>
+                {e.label}
+              </button>
+            ))}
+          </div>
+          <p className="workout-note">
+            {pref === 'free'
+              ? 'BIG3（スクワット・ベンチプレス・デッドリフト）を先にします。フォームが大事なので、はじめは軽い重さで練習してください。'
+              : 'マシンを先にします。動きが決まっているので、はじめての人でもフォームがくずれにくいです。'}
+            筋肉の増え方は、フリーウェイトとマシンで差がないと分かっています。
+          </p>
+        </>
+      )}
+
+      <div className={`segment recommend-styles ${place === 'home' ? 'recommend-days days-3' : ''}`} role="group" aria-label="やり方">
+        {STYLES.filter((st) => place === 'gym' || !st.gymOnly).map((st) => (
           <button key={st.id} type="button" className={style === st.id ? 'active' : ''} onClick={() => changeStyle(st.id)}>
             {st.label}
             {st.id === autoStyle && <small className="recommend-badge">おすすめ</small>}
@@ -79,17 +120,20 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
         ))}
       </div>
       <p className="workout-note">
-        {style === 'full'
-          ? '全身法：1回で全身を鍛えます。週3回までならこちらがおすすめです。'
-          : '分割法：上半身の日と下半身の日を交互に行います。週4回以上ならこちらがおすすめです。'}
+        {style === 'full' && '全身法：1回で全身を鍛えます。週3回までならこちらがおすすめです。'}
+        {style === 'split2' && '2分割：上半身の日と下半身の日を交互に行います。週4〜5回ならこちらがおすすめです。'}
+        {style === 'split3' && '3分割：胸・肩 → 背中 → 脚 の順にくり返します。週6回なら、それぞれの部位を週2回鍛えられます。'}
+        {style === 'split4' && '4分割：胸 → 肩 → 背中 → 脚 の順にくり返します。1日に1つの部位をじっくり鍛えます。'}
+        {(style === 'split3' || style === 'split4') &&
+          `週${style === 'split3' ? 6 : 8}回より少ないと、同じ部位は週1回になります。同じ部位は週2回のほうが筋肉が増えやすいと分かっています。`}
         {plan.sessions ? `（運動の計画：週${plan.sessions}回）` : '（プロフィールで運動の計画を入れると、週の回数からおすすめを出します）'}
       </p>
-      {style === 'split' && (
-        <div className="segment recommend-place" role="group" aria-label="今日の日">
-          {SPLIT_DAYS.map((d) => (
-            <button key={d.id} type="button" className={splitDay === d.id ? 'active' : ''} onClick={() => { setSplitDay(d.id); setOpen(null) }}>
+      {style !== 'full' && (
+        <div className={`segment recommend-days days-${styleInfo.days.length}`} role="group" aria-label="今日の日">
+          {styleInfo.days.map((d) => (
+            <button key={d.id} type="button" className={day === d.id ? 'active' : ''} onClick={() => { setPickedDay(d.id); setOpen(null) }}>
               {d.label}
-              {d.id === nextSplitDay(records, GUIDE) && <small className="recommend-badge">次はこちら</small>}
+              {d.id === nextDay && <small className="recommend-badge">次はこちら</small>}
             </button>
           ))}
         </div>
