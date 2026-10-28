@@ -57,7 +57,7 @@ export function nextSplitDay(records, guide) {
   if (strength.length === 0) return 'upper'
   const lastDate = strength.reduce((d, r) => (r.date > d ? r.date : d), '')
   const day = strength.filter((r) => r.date === lastDate)
-  const lower = day.filter((r) => guide[r.exercise].muscles.some((m) => LOWER_MUSCLES.includes(m)) && !guide[r.exercise].muscles.some((m) => ['chest', 'back', 'shoulders', 'biceps', 'triceps'].includes(m))).length
+  const lower = day.filter((r) => guide[r.exercise].muscles.some((m) => LOWER_MUSCLES.includes(m)) && !guide[r.exercise].muscles.some((m) => ['chest', 'chestUpper', 'chestMiddle', 'chestLower', 'back', 'shoulders', 'biceps', 'triceps'].includes(m))).length
   return lower > day.length / 2 ? 'upper' : 'lower'
 }
 

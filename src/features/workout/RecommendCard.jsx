@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { loadExercisePlan } from '../goal/exercisePlan.js'
-import BodyMap from './BodyMap.jsx'
+import ExerciseGuide from './ExerciseGuide.jsx'
 import { MINUTES_PER_EXERCISE, PLACES, SPLIT_DAYS, STYLES, nextSplitDay, recommendMenu, recommendedStyle, strengthMinutes } from './recommend.js'
-import { GUIDE, videoSearchUrl } from './workoutGuide.js'
+import { GUIDE } from './workoutGuide.js'
 
 const PLACE_KEY = 'fitness-tracker.trainingPlace'
 // 全身法・分割法を自分で選んだときだけ覚える（選んでいなければ、週の回数から自動で決める）
@@ -125,20 +125,7 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
                 </button>
                 <button type="button" onClick={() => onUse(m.name, m.weight, m.sets)}>記録に使う</button>
               </div>
-              {open === m.name && guide && (
-                <div className="recommend-guide">
-                  <BodyMap muscles={guide.muscles} />
-                  <ol className="guide-steps">
-                    {guide.steps.map((s) => (
-                      <li key={s}>{s}</li>
-                    ))}
-                  </ol>
-                  <p className="workout-note">⚠️ {guide.tip}</p>
-                  <a className="guide-video" href={videoSearchUrl(m.name)} target="_blank" rel="noreferrer">
-                    ▶ YouTube でやり方の動画を探す
-                  </a>
-                </div>
-              )}
+              {open === m.name && guide && <ExerciseGuide name={m.name} guide={guide} />}
             </li>
           )
         })}

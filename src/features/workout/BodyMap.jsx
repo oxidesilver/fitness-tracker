@@ -2,6 +2,9 @@
 // muscles：['chest', 'abs', ...]（名前は下の MUSCLES）
 export const MUSCLES = {
   chest: '胸',
+  chestUpper: '胸の上部',
+  chestMiddle: '胸の中部',
+  chestLower: '胸の下部',
   shoulders: '肩',
   biceps: '腕の前',
   triceps: '腕の後ろ',
@@ -18,6 +21,10 @@ export const MUSCLES = {
 const FRONT = {
   shoulders: [[19, 40, 14, 12, 6], [67, 40, 14, 12, 6]],
   chest: [[32, 46, 17, 20, 4], [51, 46, 17, 20, 4]],
+  // 胸を上・中・下に分けたもの（胸の上に重ねて描く）
+  chestUpper: [[32, 46, 17, 7, 3], [51, 46, 17, 7, 3]],
+  chestMiddle: [[32, 53, 17, 6, 0], [51, 53, 17, 6, 0]],
+  chestLower: [[32, 59, 17, 7, 3], [51, 59, 17, 7, 3]],
   biceps: [[18, 54, 10, 24, 5], [72, 54, 10, 24, 5]],
   abs: [[38, 68, 24, 40, 4]],
   quads: [[32, 114, 16, 44, 6], [52, 114, 16, 44, 6]],
@@ -32,6 +39,8 @@ const BACK = {
   calves: [[33, 164, 14, 28, 6], [53, 164, 14, 28, 6]],
 }
 
+const SUB_PARTS = ['chestUpper', 'chestMiddle', 'chestLower']
+
 function Figure({ parts, muscles, label }) {
   return (
     <figure className="body-figure">
@@ -45,7 +54,10 @@ function Figure({ parts, muscles, label }) {
           <rect x="31" y="108" width="18" height="88" rx="7" />
           <rect x="51" y="108" width="18" height="88" rx="7" />
         </g>
-        {Object.entries(parts).map(([name, rects]) =>
+        {Object.entries(parts)
+          // 胸の上・中・下は、選ばれたときだけ重ねて描く（それ以外は胸の形のまま）
+          .filter(([name]) => !SUB_PARTS.includes(name) || muscles.includes(name))
+          .map(([name, rects]) =>
           rects.map(([x, y, w, h, r], i) => (
             <rect key={`${name}-${i}`} className={muscles.includes(name) ? 'body-part active' : 'body-part'} x={x} y={y} width={w} height={h} rx={r} />
           )),

@@ -5,12 +5,14 @@ import { loadProfile } from '../profile/profileStorage.js'
 import { loadWeights } from '../weight/weightStorage.js'
 import { bodyWeightOn, workoutKcal } from './calories.js'
 import CardioEditor from './CardioEditor.jsx'
+import ExerciseGuide from './ExerciseGuide.jsx'
 import ExercisePicker from './ExercisePicker.jsx'
 import RecommendCard from './RecommendCard.jsx'
 import RunEditor from './RunEditor.jsx'
 import SetEditor from './SetEditor.jsx'
 import { EQUIPMENT, WORKOUT_GROUPS, isWeightOptional, startingWeight, workoutInfo } from './workoutCatalog.js'
 import { addWorkout, deleteWorkout, frequentExercises, lastWorkout, legacyExerciseNames, loadWorkouts } from './workoutStorage.js'
+import { GUIDE } from './workoutGuide.js'
 import './workout.css'
 
 const EMPTY_SET = { weight: '', reps: '10' }
@@ -50,14 +52,9 @@ function describe(r) {
   return r.sets.map((s) => describeSet(s, bodyweight)).join(' / ')
 }
 
-// 記録を日付ごとにまとめる：[['2026-10-25', [記録, 記録]], ...]
-function groupByDate(records) {
-  const groups = new Map()
-  for (const r of records) {
-    if (!groups.has(r.date)) groups.set(r.date, [])
-    groups.get(r.date).push(r)
-  }
-  return [...groups]
+// 記録のある日（古い順）
+function recordedDates(records) {
+  return [...new Set(records.map((r) => r.date))].sort()
 }
 
 // 入力欄の文字を数字に直す。正しくなければ null
@@ -80,13 +77,24 @@ export default function WorkoutPage() {
   const [cardio, setCardio] = useState({ level: 0, minutes: '30' })
   const [error, setError] = useState('')
   const [saved, setSaved] = useState('')
+  const [showGuide, setShowGuide] = useState(false)
 
   const info = exercise ? workoutInfo(exercise) : null
+
+  // 下の記録は、上の「日付」の日だけを出す（食事の画面と同じ）
+  const dayRecords = records.filter((r) => r.date === date)
+  const dayBodyKg = bodyWeightOn(date, weights)
+  const dayKcals = dayRecords.map((r) => workoutKcal(r, dayBodyKg))
+  const dayTotal = dayKcals.some((k) => k !== null) ? Math.round(dayKcals.reduce((a, b) => a + (b ?? 0), 0)) : null
+  const dates = recordedDates(records)
+  const prevDate = [...dates].reverse().find((d) => d < date) ?? null
+  const nextDate = dates.find((d) => d > date) ?? null
 
   // 種目を選んだら、前回のその種目の内容を最初から入れておく。
   // はじめての種目なら、体重から出した軽めの重さを入れておく
   function selectExercise(name) {
     setExercise(name)
+    setShowGuide(false)
     setError('')
     setSaved('')
     if (!name) return
@@ -227,6 +235,15 @@ export default function WorkoutPage() {
           legacy={legacyExerciseNames(records, (n) => KNOWN.has(n))}
         />
 
+        {GUIDE[exercise] && (
+          <>
+            <button type="button" className="workout-guide-toggle" onClick={() => setShowGuide(!showGuide)}>
+              {showGuide ? 'やり方を閉じる' : 'やり方を見る'}
+            </button>
+            {showGuide && <ExerciseGuide name={exercise} guide={GUIDE[exercise]} />}
+          </>
+        )}
+
         {info?.kind === 'run' && <RunEditor run={run} onChange={setRun} />}
         {info?.kind === 'cardio' && <CardioEditor catalogId={info.catalogId} value={cardio} onChange={setCardio} />}
         {info?.kind === 'sets' && <SetEditor sets={sets} onChange={setSets} info={info} />}
@@ -236,9 +253,13 @@ export default function WorkoutPage() {
         <button type="submit" className="primary">記録する</button>
       </form>
 
-      <h2>これまでの記録</h2>
-      {records.length === 0 ? (
-        <p className="workout-empty">まだ記録がありません</p>
+      <h2>{date === today() ? '今日' : formatDate(date)}の記録</h2>
+      <div className="workout-day-nav">
+        <button type="button" onClick={() => setDate(prevDate)} disabled={!prevDate}>◀ 前の記録の日</button>
+        <button type="button" onClick={() => setDate(nextDate)} disabled={!nextDate}>次の記録の日 ▶</button>
+      </div>
+      {dayRecords.length === 0 ? (
+        <p className="workout-empty">{records.length === 0 ? 'まだ記録がありません' : 'この日の記録はありません。上の日付を変えるか、「前の記録の日」で見られます。'}</p>
       ) : (
         <>
           <p className="workout-note">
@@ -246,37 +267,25 @@ export default function WorkoutPage() {
               ? '体重の画面で体重を記録すると、消費カロリーの目安が出ます。'
               : '消費カロリーは目安です。筋トレは1セット＝休憩込みで約3分として計算しています。有酸素・スポーツは強さと時間から計算しています。'}
           </p>
-          {groupByDate(records).map(([d, items]) => {
-            const bodyKg = bodyWeightOn(d, weights)
-            const kcals = items.map((r) => workoutKcal(r, bodyKg))
-            const total = bodyKg ? Math.round(kcals.reduce((a, b) => a + b, 0)) : null
-            return (
-              <div key={d} className="workout-day">
-                <h3>
-                  <span>{formatDate(d)}</span>
-                  {total !== null && <span className="workout-total">合計 約{total} kcal</span>}
-                </h3>
-                <ul className="card workout-list">
-                  {items.map((r, i) => (
-                    <li key={r.id}>
-                      <div className="workout-item">
-                        <span className="workout-name">{r.exercise}</span>
-                        <span className="workout-detail">{describe(r)}</span>
-                        {kcals[i] !== null && (
-                          <span className="workout-kcal">
-                            {r.run?.kcal ? `${r.run.kcal} kcal（アプリの数字）` : `約${Math.round(kcals[i])} kcal`}
-                          </span>
-                        )}
-                      </div>
-                      <button type="button" className="workout-delete" onClick={() => handleDelete(r)}>
-                        消す
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          })}
+          {dayTotal !== null && <p className="workout-day-total">合計 約{dayTotal} kcal</p>}
+          <ul className="card workout-list">
+            {dayRecords.map((r, i) => (
+              <li key={r.id}>
+                <div className="workout-item">
+                  <span className="workout-name">{r.exercise}</span>
+                  <span className="workout-detail">{describe(r)}</span>
+                  {dayKcals[i] !== null && (
+                    <span className="workout-kcal">
+                      {r.run?.kcal ? `${r.run.kcal} kcal（アプリの数字）` : `約${Math.round(dayKcals[i])} kcal`}
+                    </span>
+                  )}
+                </div>
+                <button type="button" className="workout-delete" onClick={() => handleDelete(r)}>
+                  消す
+                </button>
+              </li>
+            ))}
+          </ul>
         </>
       )}
     </section>

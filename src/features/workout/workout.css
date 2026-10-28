@@ -463,3 +463,37 @@
   align-items: center;
   color: var(--accent);
 }
+
+/* 記録の欄の「やり方を見る」 */
+.workout-guide-toggle {
+  width: 100%;
+  margin-bottom: 12px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+/* 1日ごとの記録 */
+.workout-day-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.workout-day-nav button {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.workout-day-nav button:disabled {
+  color: var(--sub);
+  opacity: 0.5;
+}
+
+.workout-day-total {
+  font-weight: 600;
+  margin: 0 0 8px;
+}
