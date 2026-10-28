@@ -3,6 +3,7 @@ import { formatDate, today } from '../../storage.js'
 import { loadDailyTarget } from '../goal/target.js'
 import FoodSearch from './FoodSearch.jsx'
 import LabelScan from './LabelScan.jsx'
+import StoreMenu from './StoreMenu.jsx'
 import MyFoods from './MyFoods.jsx'
 import PhotoImport from './PhotoImport.jsx'
 import {
@@ -20,10 +21,12 @@ import './meal.css'
 
 const EMPTY_FORM = { name: '', kcal: '', protein: '', fat: '', carbs: '' }
 
-// 入れ方：build（食品・料理を選んで献立を作る）、label（栄養成分表示を見て数字を入れる）
+// 入れ方：build（食品・料理を選んで献立を作る）、store（お店の登録したメニューから）、label（栄養成分表示を見て数字を入れる）
+// build と store は同じ献立（items）に足していく
 const MODES = [
   { id: 'build', label: '選んで作る' },
-  { id: 'label', label: '栄養成分表示から' },
+  { id: 'store', label: 'お店から' },
+  { id: 'label', label: '成分表示から' },
 ]
 
 const round1 = (n) => Math.round(n * 10) / 10
@@ -36,7 +39,7 @@ function itemsTotal(items) {
 
 // 献立から名前を作る：'ご飯 150g・鶏むね 100g'（3つより多いときは「ほか」）
 function itemsName(items) {
-  const names = items.map((i) => `${i.name} ${i.grams}g`)
+  const names = items.map((i) => (i.grams ? `${i.name} ${i.grams}g` : i.name))
   return names.length > 3 ? `${names.slice(0, 3).join('・')} ほか${names.length - 3}品` : names.join('・')
 }
 
@@ -170,8 +173,10 @@ export default function MealPage() {
     if (!date) return setError('日付を入れてください')
 
     let record
-    if (mode === 'build') {
-      if (items.length === 0) return setError('「＋ 食品・料理を追加」から、食べたものを選んでください')
+    if (mode !== 'label') {
+      if (items.length === 0) {
+        return setError(mode === 'store' ? 'お店を選んで、メニューをタップしてください' : '「＋ 食品・料理を追加」から、食べたものを選んでください')
+      }
       const name = form.name.trim() || autoName
       record = { date, time, name, ...itemsTotal(items), items }
     } else {
@@ -282,23 +287,24 @@ export default function MealPage() {
           ))}
         </div>
 
-        {mode === 'build' ? (
+        {mode !== 'label' ? (
           <>
-            <p className="meal-help">食品や料理を選んで、1回の食事（献立）を作ります。自炊やふだんの食事に使います。</p>
+            {mode === 'build' && <p className="meal-help">食品や料理を選んで、1回の食事（献立）を作ります。自炊やふだんの食事に使います。</p>}
+            {mode === 'store' && <StoreMenu onAdd={addItem} />}
             {items.length > 0 && (
               <ul className="meal-items">
                 {items.map((it, i) => (
                   <li key={`${it.code}-${i}`}>
                     <div>
                       <span className="meal-item-name">{it.name}</span>
-                      <span className="meal-detail">{it.grams}g・{it.kcal}kcal</span>
+                      <span className="meal-detail">{it.grams ? `${it.grams}g・` : ''}{it.kcal}kcal</span>
                     </div>
                     <button type="button" className="meal-item-remove" aria-label={`${it.name}を外す`} onClick={() => removeItem(i)}>✕</button>
                   </li>
                 ))}
               </ul>
             )}
-            {helper === 'table' ? (
+            {mode === 'store' ? null : helper === 'table' ? (
               <FoodSearch
                 onAdd={addItem}
                 onRecipe={(name) => setRecipeNames((list) => [...list, name])}

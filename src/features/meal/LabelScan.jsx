@@ -4,7 +4,7 @@ import { parseLabel } from './labelScan.js'
 
 // 「栄養成分表示を撮って入れる」：袋や箱の栄養成分表示の写真から、カロリー・たんぱく質・脂質・炭水化物を入れる。
 // スマホの中だけで読み取り、写真は保存しない。onPick には parseLabel の戻り値を渡す
-export default function LabelScan({ onPick }) {
+export default function LabelScan({ onPick, label = '📷 栄養成分表示を撮って入れる' }) {
   const [reading, setReading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -34,7 +34,7 @@ export default function LabelScan({ onPick }) {
   return (
     <div className="label-scan">
       <label className={reading ? 'label-scan-pick disabled' : 'label-scan-pick'}>
-        {reading ? '読み取り中…' : '📷 栄養成分表示を撮って入れる'}
+        {reading ? '読み取り中…' : label}
         <input type="file" accept="image/*" onChange={read} disabled={reading} hidden />
       </label>
       {reading && <p className="meal-help">はじめて使うときは、読み取りの準備（約6MB）に少し時間がかかります。</p>}
