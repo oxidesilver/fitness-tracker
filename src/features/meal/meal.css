@@ -298,9 +298,15 @@
   opacity: 0.5;
 }
 
-/* 入れ方の切り替え（選んで作る・栄養成分表示から） */
+/* 入れ方の切り替え（選んで作る・お店から・成分表示から） */
 .segment.meal-modes {
+  grid-template-columns: repeat(3, 1fr);
   margin-bottom: 8px;
+}
+
+.segment.meal-modes button {
+  padding: 0 4px;
+  font-size: 15px;
 }
 
 /* 献立の中身 */
@@ -510,4 +516,59 @@
 
 .recipe-items .stepper {
   margin-bottom: 0;
+}
+
+/* お店から */
+.store-add {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+
+.store-add input {
+  flex: 1;
+  min-width: 0;
+}
+
+.store-add button {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 16px;
+}
+
+.store-add button:disabled {
+  opacity: 0.5;
+}
+
+.store-detail {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+}
+
+.store-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.store-head a {
+  color: var(--accent);
+  font-size: 14px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  text-align: right;
+}
+
+.store-detail .my-foods-list {
+  margin-bottom: 12px;
+}
+
+.store-form {
+  margin-top: 8px;
 }
