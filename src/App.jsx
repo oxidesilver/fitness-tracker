@@ -3,6 +3,7 @@ import TabBar from './components/TabBar.jsx'
 import ChartsPage from './features/charts/ChartsPage.jsx'
 import MealPage from './features/meal/MealPage.jsx'
 import ProfilePage from './features/profile/ProfilePage.jsx'
+import { loadProfile } from './features/profile/profileStorage.js'
 import WeightPage from './features/weight/WeightPage.jsx'
 import WorkoutPage from './features/workout/WorkoutPage.jsx'
 
@@ -17,8 +18,10 @@ const TABS = [
 
 const TAB_KEY = 'fitness-tracker.tab'
 
-// 最後に開いていた画面を覚えておく
+// 最後に開いていた画面を覚えておく。
+// ただし、プロフィールの設定が終わる（「これでOK」を押す）までは、プロフィールの画面から始める（初めて使う人が迷わないように）
 function loadTab() {
+  if (!loadProfile().confirmed) return 'profile'
   try {
     const saved = localStorage.getItem(TAB_KEY)
     return TABS.some((t) => t.id === saved) ? saved : TABS[0].id
