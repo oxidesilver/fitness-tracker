@@ -10,6 +10,8 @@ export const EQUIPMENT = {
   dumbbell: { min: 1, step: 1, weightLabel: '片手の重さ', note: 'ダンベル1つ（片手）の重さを入れます' },
   machine: { min: 5, step: 2.5, weightLabel: '重さ', note: '' },
   cable: { min: 2.5, step: 2.5, weightLabel: '重さ', note: '' },
+  // 左右に1本ずつケーブルを持つ種目（ケーブルクロスオーバー）。片側の重さを入れる
+  cablePair: { min: 2.5, step: 2.5, weightLabel: '片側の重さ', note: '左右どちらか片側のケーブルの重さを入れます' },
   bodyweight: { min: 0, step: 2.5, weightLabel: '追加の重さ', note: '重りを足さないときは、重さは空のままにします（自重）' },
   // 前の版で自分で足した種目（一覧にない）。どんな道具か分からないので、重さは空（自重）でもよい
   legacy: { min: 0, step: 2.5, weightLabel: '重さ', note: '重りを使わないときは、重さは空のままにします（自重）' },
@@ -29,6 +31,10 @@ const STRENGTH = [
     { name: 'ダンベルフライ', equipment: 'dumbbell', ratio: 0.08 },
     { name: 'チェストプレス（マシン）', equipment: 'machine', ratio: 0.3 },
     { name: 'ペックフライ（マシン）', equipment: 'machine', ratio: 0.2 },
+    // 胸の上部・中部・下部で、ケーブルを引く向き（滑車の高さ）を変える
+    { name: 'ケーブルクロスオーバー（上部）', equipment: 'cablePair', ratio: 0.06 },
+    { name: 'ケーブルクロスオーバー（中部）', equipment: 'cablePair', ratio: 0.07 },
+    { name: 'ケーブルクロスオーバー（下部）', equipment: 'cablePair', ratio: 0.07 },
     { name: '腕立て伏せ', equipment: 'bodyweight' },
   ] },
   { group: '背中', items: [
