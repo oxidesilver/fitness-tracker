@@ -3,6 +3,7 @@ import { formatDate, today } from '../../storage.js'
 import { loadDailyTarget } from '../goal/target.js'
 import FoodSearch from './FoodSearch.jsx'
 import LabelScan from './LabelScan.jsx'
+import ScoreCard from './ScoreCard.jsx'
 import StoreMenu from './StoreMenu.jsx'
 import MyFoods from './MyFoods.jsx'
 import PhotoImport from './PhotoImport.jsx'
@@ -245,8 +246,10 @@ export default function MealPage() {
             </div>
           )
         })}
-        {!target && <p className="meal-help">プロフィールの画面で目標を入れると、目標との比較が出ます。</p>}
+        {!target && <p className="meal-help">プロフィールの画面で目標を入れると、目標との比較と点数が出ます。</p>}
       </div>
+
+      <ScoreCard total={total} target={target} meals={dayMeals} isToday={date === today()} />
 
       <h2>記録する</h2>
       <form className="card" onSubmit={handleSubmit}>
