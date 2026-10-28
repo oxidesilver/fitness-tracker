@@ -572,3 +572,9 @@
 .store-form {
   margin-top: 8px;
 }
+
+.store-tip {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+}

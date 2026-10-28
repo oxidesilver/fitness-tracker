@@ -1,9 +1,10 @@
 // 栄養成分表示の写真を読み取った文字から、カロリー・たんぱく質・脂質・炭水化物を取り出す。
 // 読み取りの文字は「た ん ぱく 質 7.19」のように、すき間が入ったり g が 9 に化けたりするので、それを直してから読む
 
+// 見出しは正規表現の形でもよい（読み取りで「たんばぱく質」のように崩れることがあるため）
 const LABELS = {
   kcal: ['エネルギー', '熱量'],
-  protein: ['たんぱく質', 'タンパク質', '蛋白質', 'たん白質'],
+  protein: ['たんぱく質', 'タンパク質', '蛋白質', 'たん白質', 'たん[ばぱ]+く質', '[ばぱ]く質'],
   fat: ['脂質'],
   carbs: ['炭水化物'],
   sugar: ['糖質'],
@@ -40,7 +41,8 @@ export function parseLabel(text) {
     const fiber = grams(valueAfter(t, LABELS.fiber))
     if (sugar !== null) carbs = Math.round((sugar + (fiber ?? 0)) * 10) / 10
   }
-  const per = t.match(/[(（]?([^()（）]{1,15}当[たり]*)[)）]?/)
+  // 「1個当たり」「1食当り」など（「食塩相当量」の「当」は外す）
+  const per = t.match(/[(（]?([^()（）]{1,15}?当た?り)[)）]?/)
   return {
     kcal: Math.round(Number(kcalV.raw)),
     protein: grams(valueAfter(t, LABELS.protein)),

@@ -2,9 +2,15 @@
 // アプリには入れず、使う人が公式ページを見て自分のスマホの中にだけ登録する（私的使用）。
 import { loadList, saveList } from '../../storage.js'
 
-// 最初から並べるお店。url は公式の栄養成分のページ（確かめられたもの）。ないお店は検索のページを開く
+// 最初から並べるお店。url は公式の栄養成分のページ（確かめられたもの）。ないお店は検索のページを開く。
+// tip はスクショの撮り方のこつ（マクドナルドの一覧の表は横に長く、1枚に収まらないため）
 export const STORES = [
-  { id: 'mcdonalds', name: 'マクドナルド', url: 'https://www.mcdonalds.co.jp/quality/allergy_Nutrition/nutrient/' },
+  {
+    id: 'mcdonalds',
+    name: 'マクドナルド',
+    url: 'https://www.mcdonalds.co.jp/quality/allergy_Nutrition/nutrient/',
+    tip: '一覧の表は横に長いので、表のメニューの名前をタップしてください。そのメニューだけのページが開くので、下のほうの「栄養情報」（エネルギー〜炭水化物）を1枚に撮ると読み取れます。',
+  },
   { id: 'sukiya', name: 'すき家', url: 'https://www.sukiya.jp/menu/' },
   { id: 'yoshinoya', name: '吉野家' },
   { id: 'aw', name: 'A&W' },
