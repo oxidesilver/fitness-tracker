@@ -131,6 +131,9 @@ export default function StoreMenu({ onAdd }) {
             <div className="store-form">
               <p className="photo-step">{store.name}のメニューを登録</p>
               <p className="meal-help">「公式の栄養成分を見る」で数字を見て入れます。スクリーンショットから読み取ることもできます（読めないときは手で入れてください）。</p>
+              <p className="meal-help store-tip">
+                {store.tip ?? '表が横に長くて1枚に収まらないときは、メニューの名前をタップして、そのメニューだけのページを撮ってください。'}
+              </p>
               <LabelScan
                 label="📷 スクショから読み取る"
                 onPick={(v) => setForm((f) => ({ ...f, kcal: text(v.kcal), protein: text(v.protein), fat: text(v.fat), carbs: text(v.carbs) }))}
