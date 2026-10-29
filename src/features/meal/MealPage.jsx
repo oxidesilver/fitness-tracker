@@ -249,7 +249,7 @@ export default function MealPage() {
         {!target && <p className="meal-help">プロフィールの画面で目標を入れると、目標との比較と点数が出ます。</p>}
       </div>
 
-      <ScoreCard total={total} target={target} meals={dayMeals} isToday={date === today()} />
+      <ScoreCard key={date} total={total} target={target} meals={dayMeals} date={date} />
 
       <h2>記録する</h2>
       <form className="card" onSubmit={handleSubmit}>
