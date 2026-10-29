@@ -4,6 +4,10 @@ import ChartsPage from './features/charts/ChartsPage.jsx'
 import MealPage from './features/meal/MealPage.jsx'
 import ProfilePage from './features/profile/ProfilePage.jsx'
 import { loadProfile } from './features/profile/profileStorage.js'
+import { hasUnseenReview } from './features/review/weeklyReview.js'
+import { loadMeals } from './features/meal/mealStorage.js'
+import { loadWorkouts } from './features/workout/workoutStorage.js'
+import { today } from './storage.js'
 import WeightPage from './features/weight/WeightPage.jsx'
 import WorkoutPage from './features/workout/WorkoutPage.jsx'
 
@@ -32,10 +36,13 @@ function loadTab() {
 
 export default function App() {
   const [tab, setTab] = useState(loadTab)
+  // 先週の振り返りをまだ見ていなければ、グラフのタブに印を出す（通知の代わり）
+  const [reviewBadge, setReviewBadge] = useState(() => hasUnseenReview(today(), [...loadWorkouts(), ...loadMeals()]))
   const { Page } = TABS.find((t) => t.id === tab)
 
   function changeTab(id) {
     setTab(id)
+    if (id === 'charts') setReviewBadge(false)
     try {
       localStorage.setItem(TAB_KEY, id)
     } catch {
@@ -49,7 +56,7 @@ export default function App() {
       <main className="app">
         <Page />
       </main>
-      <TabBar tabs={TABS} current={tab} onChange={changeTab} />
+      <TabBar tabs={TABS.map((t) => (t.id === 'charts' ? { ...t, badge: reviewBadge && tab !== 'charts' } : t))} current={tab} onChange={changeTab} />
     </>
   )
 }

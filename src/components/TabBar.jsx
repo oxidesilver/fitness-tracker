@@ -11,8 +11,12 @@ export default function TabBar({ tabs, current, onChange }) {
           className={t.id === current ? 'tabbar-item active' : 'tabbar-item'}
           onClick={() => onChange(t.id)}
         >
-          <span className="tabbar-icon" aria-hidden="true">{t.icon}</span>
+          <span className="tabbar-icon" aria-hidden="true">
+            {t.icon}
+            {t.badge && <span className="tabbar-badge" />}
+          </span>
           {t.label}
+          {t.badge && <span className="sr-only">（新しいお知らせ）</span>}
         </button>
       ))}
     </nav>

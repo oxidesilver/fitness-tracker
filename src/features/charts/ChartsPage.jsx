@@ -5,6 +5,7 @@ import { loadDailyTarget } from '../goal/target.js'
 import { loadMeals } from '../meal/mealStorage.js'
 import { loadWeights } from '../weight/weightStorage.js'
 import { loadWorkouts } from '../workout/workoutStorage.js'
+import WeeklyReview from '../review/WeeklyReview.jsx'
 import MealCharts from './MealCharts.jsx'
 import WeightChart from './WeightChart.jsx'
 import WorkoutCharts from './WorkoutCharts.jsx'
@@ -55,6 +56,8 @@ export default function ChartsPage() {
   return (
     <section>
       <h1>グラフ</h1>
+      <WeeklyReview workouts={workouts} meals={meals} weights={weights} target={target} goal={goal} />
+
       <div className="segment segment-3 chart-range" role="group" aria-label="表示する期間">
         {RANGES.map((r) => (
           <button key={r.id} type="button" className={range === r.id ? 'active' : ''} onClick={() => changeRange(r.id)}>
