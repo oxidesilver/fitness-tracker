@@ -8,7 +8,8 @@ import { exerciseKcal, loadExercisePlan } from './exercisePlan.js'
 import { loadGoal } from './goalStorage.js'
 import { goalPlan } from './nutrition.js'
 
-// 戻り値：{ kcal, protein, fat, carbs, mode, weightKg, basal, age }（計算できないときは null）
+// 戻り値：{ kcal, protein, fat, carbs, mode, weightKg, basal, age, expenditure }（計算できないときは null）
+// expenditure は1日の消費カロリー（ふだんの活動量＋運動の計画の分）。週の振り返りで、どれだけ足りないかを見るのに使う
 // mode は PFC の決め方（'body'：体づくり向け、'national'：国の目安）。食事の点数で使う
 export function loadDailyTarget() {
   const energy = energyFromProfile(loadProfile(), loadWeights(), today())
@@ -25,5 +26,6 @@ export function loadDailyTarget() {
     weightKg: energy.weightKg,
     basal: energy.basal,
     age: energy.age,
+    expenditure: energy.daily + (exercise?.daily ?? 0),
   }
 }

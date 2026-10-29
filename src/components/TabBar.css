@@ -32,3 +32,18 @@
   font-size: 22px;
   line-height: 1;
 }
+
+.tabbar-icon {
+  position: relative;
+}
+
+/* 新しいお知らせ（先週の振り返り）の赤い点 */
+.tabbar-badge {
+  position: absolute;
+  top: -2px;
+  right: -6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--danger);
+}
