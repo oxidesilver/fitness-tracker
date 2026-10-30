@@ -648,3 +648,32 @@
 .meal-score-sources a {
   color: var(--accent);
 }
+
+/* 登録した食品：2列にそろえて、数が多いときは「ほか○件」でひらく */
+.my-foods-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.my-foods-grid .my-food {
+  min-width: 0;
+}
+
+.my-foods-search {
+  margin-bottom: 8px;
+}
+
+.my-foods-more {
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  color: var(--accent);
+  min-height: 44px;
+}
+
+.my-foods-grid .my-food-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

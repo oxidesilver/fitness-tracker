@@ -262,7 +262,7 @@ export default function MealPage() {
           ))}
         </div>
 
-        <MyFoods foods={myFoods} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
+        <MyFoods foods={myFoods} records={records} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
         {quick && (
           <p className="meal-saved my-food-done">
             ✓ {quick.name}を{MEAL_TIMES.find((t) => t.id === quick.time).label}に記録しました
