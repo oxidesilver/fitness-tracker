@@ -19,6 +19,14 @@ const PLACE_KEY = 'fitness-tracker.trainingPlace'
 const STYLE_KEY = 'fitness-tracker.trainingStyle'
 // ジムで BIG3（フリーウェイト）とマシンのどちらを先にするか
 const PREF_KEY = 'fitness-tracker.trainingEquipment'
+// 分割法で最後に選んだ分け方（全身法にしたあと、分割法に戻したときに使う）
+const SPLIT_KEY = 'fitness-tracker.trainingSplit'
+
+// 1段目の切り替え：全身法か分割法か。分割法を選ぶと、2段目で2〜4分割を選ぶ（画面をすっきりさせるため。本人の希望）
+const KINDS = [
+  { id: 'full', label: '全身法' },
+  { id: 'split', label: '分割法' },
+]
 
 function loadSetting(key) {
   try {
@@ -61,7 +69,15 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
     saveSetting(PLACE_KEY, id)
   }
 
+  function changeKind(id) {
+    if (id === 'full') return changeStyle('full')
+    if (style !== 'full') return
+    const last = normalizeStyle(loadSetting(SPLIT_KEY))
+    changeStyle(last && last !== 'full' ? last : autoStyle !== 'full' ? autoStyle : 'split2')
+  }
+
   function changeStyle(id) {
+    if (id !== 'full') saveSetting(SPLIT_KEY, id)
     setSavedStyle(id)
     setPickedDay(null)
     setOpen(null)
@@ -111,14 +127,24 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
         </>
       )}
 
-      <div className={`segment recommend-styles ${place === 'home' ? 'recommend-days days-3' : ''}`} role="group" aria-label="やり方">
-        {STYLES.filter((st) => place === 'gym' || !st.gymOnly).map((st) => (
-          <button key={st.id} type="button" className={style === st.id ? 'active' : ''} onClick={() => changeStyle(st.id)}>
-            {st.label}
-            {st.id === autoStyle && <small className="recommend-badge">おすすめ</small>}
+      <div className="segment recommend-place" role="group" aria-label="全身法か分割法か">
+        {KINDS.map((k) => (
+          <button key={k.id} type="button" className={(style === 'full') === (k.id === 'full') ? 'active' : ''} onClick={() => changeKind(k.id)}>
+            {k.label}
+            {(autoStyle === 'full') === (k.id === 'full') && <small className="recommend-badge">おすすめ</small>}
           </button>
         ))}
       </div>
+      {style !== 'full' && (
+        <div className={`segment recommend-days days-${place === 'gym' ? 3 : 2}`} role="group" aria-label="何分割">
+          {STYLES.filter((st) => st.id !== 'full' && (place === 'gym' || !st.gymOnly)).map((st) => (
+            <button key={st.id} type="button" className={style === st.id ? 'active' : ''} onClick={() => changeStyle(st.id)}>
+              {st.label}
+              {st.id === autoStyle && <small className="recommend-badge">おすすめ</small>}
+            </button>
+          ))}
+        </div>
+      )}
       <p className="workout-note">
         {style === 'full' && '全身法：1回で全身を鍛えます。週3回までならこちらがおすすめです。'}
         {style === 'split2' && '2分割：上半身の日と下半身の日を交互に行います。週4〜5回ならこちらがおすすめです。'}
