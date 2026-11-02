@@ -520,3 +520,18 @@
   padding: 0 2px;
   font-size: 15px;
 }
+
+/* おすすめの種目を見る／閉じる */
+.recommend-toggle {
+  width: 100%;
+  margin: 4px 0 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.recommend-toggle[aria-expanded='true'] {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
