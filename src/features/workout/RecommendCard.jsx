@@ -55,6 +55,8 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
   const [pref, setPref] = useState(() => (loadSetting(PREF_KEY) === 'machine' ? 'machine' : 'free'))
   const [pickedDay, setPickedDay] = useState(null)
   const [open, setOpen] = useState(null)
+  // 種目の一覧は長いので、最初はたたんでおき「おすすめの種目を見る」でひらく（本人の希望）
+  const [showMenu, setShowMenu] = useState(false)
 
   // 自宅では4分割を選べない（肩だけの自重の種目がないため）。そのときは3分割にする
   const wanted = savedStyle ?? autoStyle
@@ -98,7 +100,9 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
     <details className="card recommend" open>
       <summary>
         <span>おすすめメニュー</span>
-        <span className="recommend-time">全{menu.length}種目・約{total}分</span>
+        <span className="recommend-time">
+          全{menu.length}種目・約{total}分
+        </span>
       </summary>
 
       <div className="segment recommend-place" role="group" aria-label="場所">
@@ -148,8 +152,7 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
       <p className="workout-note">
         {style === 'full' && '全身法：1回で全身を鍛えます。週3回までならこちらがおすすめです。'}
         {style === 'split2' && '2分割：上半身の日と下半身の日を交互に行います。週4〜5回ならこちらがおすすめです。'}
-        {style === 'split3' &&
-          '3分割：胸・肩 → 背中 → 脚 の順にくり返します。3日で1周するので、週3回なら同じ部位は週1回、週6回なら週2回になります。'}
+        {style === 'split3' && '3分割：胸・肩 → 背中 → 脚 の順にくり返します。3日で1周するので、週3回なら同じ部位は週1回、週6回なら週2回になります。'}
         {style === 'split4' &&
           '4分割：胸 → 背中 → 肩 → 脚 の順にくり返します。胸の種目は肩の前と腕の後ろも使うので、胸の日と肩の日が続かないように間に背中・脚の日をはさんでいます。4日で1周するので、週4回なら同じ部位は週1回、毎日続けても週1〜2回です。'}
         {(style === 'split3' || style === 'split4') &&
@@ -159,7 +162,15 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
       {style !== 'full' && (
         <div className={`segment recommend-days days-${styleInfo.days.length}`} role="group" aria-label="今日の日">
           {styleInfo.days.map((d) => (
-            <button key={d.id} type="button" className={day === d.id ? 'active' : ''} onClick={() => { setPickedDay(d.id); setOpen(null) }}>
+            <button
+              key={d.id}
+              type="button"
+              className={day === d.id ? 'active' : ''}
+              onClick={() => {
+                setPickedDay(d.id)
+                setOpen(null)
+              }}
+            >
               {d.label}
               {d.id === nextDay && <small className="recommend-badge">次はこちら</small>}
             </button>
@@ -167,42 +178,55 @@ export default function RecommendCard({ records, bodyKg, sex, onUse }) {
         </div>
       )}
 
-      <p className="workout-note">
-        {menu.some((m) => !m.bodyweight)
-          ? '「限界まで」は、10回前後でこれ以上できなくなる重さのことです。軽すぎる・重すぎるときは、記録するときに重さを変えてください（次から反映されます）。'
-          : '「限界まで」は、これ以上できなくなるまでくり返すことです。'}
-        セットの間は1〜2分休みます。
-        {fromPlan ? `プロフィールの運動の計画（筋トレ約${minutes}分）に合わせています。` : 'プロフィールで運動の計画を入れると、その時間に合わせます。'}
-      </p>
+      <button type="button" className="recommend-toggle" aria-expanded={showMenu} onClick={() => setShowMenu(!showMenu)}>
+        {showMenu ? 'おすすめの種目を閉じる' : 'おすすめの種目を見る'}
+      </button>
 
-      <ol className="recommend-list">
-        {menu.map((m, i) => {
-          const guide = GUIDE[m.name]
-          return (
-            <li key={m.name}>
-              <div className="recommend-head">
-                <span className="recommend-no">{i + 1}</span>
-                <div className="recommend-body">
-                  <strong>{m.name}</strong>
-                  <span className="recommend-detail">
-                    {m.bodyweight ? '自重' : `${m.weight}kg${m.unitLabel === '片手の重さ' ? '（片手）' : ''}`}
-                    で限界まで（{m.bodyweight ? '目安10〜15回' : '10回前後'}）× {m.sets}セット・約{m.minutes}分
-                  </span>
-                  {!m.bodyweight && <span className="recommend-sub">{m.fromLast ? '前回の重さ' : '体重から出した最初の目安'}</span>}
-                </div>
-              </div>
-              <div className="recommend-buttons">
-                <button type="button" onClick={() => setOpen(open === m.name ? null : m.name)}>
-                  {open === m.name ? 'やり方を閉じる' : 'やり方を見る'}
-                </button>
-                <button type="button" onClick={() => onUse(m.name, m.weight, m.sets)}>記録に使う</button>
-              </div>
-              {open === m.name && guide && <ExerciseGuide name={m.name} guide={guide} />}
-            </li>
-          )
-        })}
-      </ol>
-      <p className="workout-note">1種目は、準備と軽い1セット・3セット・セットの間の休みで約{MINUTES_PER_EXERCISE}分として計算しています。</p>
+      {showMenu && (
+        <>
+          <p className="workout-note">
+            {menu.some((m) => !m.bodyweight)
+              ? '「限界まで」は、10回前後でこれ以上できなくなる重さのことです。軽すぎる・重すぎるときは、記録するときに重さを変えてください（次から反映されます）。'
+              : '「限界まで」は、これ以上できなくなるまでくり返すことです。'}
+            セットの間は1〜2分休みます。
+            {fromPlan ? `プロフィールの運動の計画（筋トレ約${minutes}分）に合わせています。` : 'プロフィールで運動の計画を入れると、その時間に合わせます。'}
+          </p>
+
+          <ol className="recommend-list">
+            {menu.map((m, i) => {
+              const guide = GUIDE[m.name]
+              return (
+                <li key={m.name}>
+                  <div className="recommend-head">
+                    <span className="recommend-no">{i + 1}</span>
+                    <div className="recommend-body">
+                      <strong>{m.name}</strong>
+                      <span className="recommend-detail">
+                        {m.bodyweight ? '自重' : `${m.weight}kg${m.unitLabel === '片手の重さ' ? '（片手）' : ''}`}
+                        で限界まで（{m.bodyweight ? '目安10〜15回' : '10回前後'}）× {m.sets}セット・約{m.minutes}分
+                      </span>
+                      {!m.bodyweight && <span className="recommend-sub">{m.fromLast ? '前回の重さ' : '体重から出した最初の目安'}</span>}
+                    </div>
+                  </div>
+                  <div className="recommend-buttons">
+                    <button type="button" onClick={() => setOpen(open === m.name ? null : m.name)}>
+                      {open === m.name ? 'やり方を閉じる' : 'やり方を見る'}
+                    </button>
+                    <button type="button" onClick={() => onUse(m.name, m.weight, m.sets)}>
+                      記録に使う
+                    </button>
+                  </div>
+                  {open === m.name && guide && <ExerciseGuide name={m.name} guide={guide} />}
+                </li>
+              )
+            })}
+          </ol>
+          <p className="workout-note">1種目は、準備と軽い1セット・3セット・セットの間の休みで約{MINUTES_PER_EXERCISE}分として計算しています。</p>
+          <button type="button" className="recommend-toggle" onClick={() => setShowMenu(false)}>
+            おすすめの種目を閉じる
+          </button>
+        </>
+      )}
     </details>
   )
 }
