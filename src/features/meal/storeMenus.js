@@ -8,17 +8,29 @@ export const STORES = [
   {
     id: 'mcdonalds',
     name: 'マクドナルド',
+    genre: 'burger',
     url: 'https://www.mcdonalds.co.jp/quality/allergy_Nutrition/nutrient/',
     tip: '一覧の表は横に長いので、表のメニューの名前をタップしてください。そのメニューだけのページが開くので、下のほうの「栄養情報」（エネルギー〜炭水化物）を1枚に撮ると読み取れます。',
   },
-  { id: 'sukiya', name: 'すき家', url: 'https://www.sukiya.jp/menu/' },
-  { id: 'yoshinoya', name: '吉野家' },
-  { id: 'aw', name: 'A&W' },
-  { id: 'jef', name: 'ジェフ' },
-  { id: 'mos', name: 'モスバーガー' },
-  { id: 'kfc', name: 'ケンタッキー' },
-  { id: 'hottomotto', name: 'ほっともっと' },
-  { id: 'cocoichi', name: 'CoCo壱番屋' },
+  { id: 'sukiya', name: 'すき家', genre: 'gyudon', url: 'https://www.sukiya.jp/menu/' },
+  { id: 'yoshinoya', name: '吉野家', genre: 'gyudon' },
+  { id: 'aw', name: 'A&W', genre: 'burger' },
+  { id: 'jef', name: 'ジェフ', genre: 'burger' },
+  { id: 'mos', name: 'モスバーガー', genre: 'burger' },
+  { id: 'kfc', name: 'ケンタッキー', genre: 'burger' },
+  { id: 'hottomotto', name: 'ほっともっと', genre: 'bento' },
+  { id: 'cocoichi', name: 'CoCo壱番屋', genre: 'curry' },
+]
+
+// お店のジャンル。先にジャンルを選んでからお店を出す（お店が一度に並ばないように。本人の希望）
+// used：メニューを登録したお店（あれば最初に選ばれている）、custom：自分で足したお店
+export const GENRES = [
+  { id: 'used', label: '登録のあるお店' },
+  { id: 'burger', label: 'ハンバーガー・チキン' },
+  { id: 'gyudon', label: '牛丼' },
+  { id: 'curry', label: 'カレー' },
+  { id: 'bento', label: 'お弁当' },
+  { id: 'custom', label: '自分で足したお店' },
 ]
 
 // 公式の栄養成分を見るページ。分からないお店は「お店の名前 栄養成分」で検索する
@@ -49,6 +61,6 @@ export function removeStoreMenu(menu) {
 // 並べるお店：最初からのお店＋自分で足したお店（登録したメニューにある名前）
 export function storeList(menus, extra = []) {
   const names = new Set(STORES.map((s) => s.name))
-  const custom = [...new Set([...menus.map((m) => m.store), ...extra])].filter((n) => !names.has(n)).map((name) => ({ id: name, name }))
+  const custom = [...new Set([...menus.map((m) => m.store), ...extra])].filter((n) => !names.has(n)).map((name) => ({ id: name, name, genre: 'custom' }))
   return [...STORES, ...custom]
 }

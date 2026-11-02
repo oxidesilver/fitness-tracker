@@ -677,3 +677,33 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* 登録した食品・よく食べるもの（たたんでおき、押すとひらく） */
+.quick-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 14px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.quick-toggle[aria-expanded='true'] {
+  margin-bottom: 8px;
+}
+
+.quick-panel {
+  margin-bottom: 16px;
+}
+
+.quick-panel .my-foods {
+  margin-bottom: 12px;
+}
+
+.store-genre {
+  margin-bottom: 12px;
+}

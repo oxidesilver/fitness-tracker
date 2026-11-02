@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import LabelScan from './LabelScan.jsx'
-import { addStoreMenu, loadStoreMenus, nutritionUrl, removeStoreMenu, storeList } from './storeMenus.js'
+import { GENRES, addStoreMenu, loadStoreMenus, nutritionUrl, removeStoreMenu, storeList } from './storeMenus.js'
 
 const EMPTY = { name: '', kcal: '', protein: '', fat: '', carbs: '' }
 const NUTRIENTS = [
@@ -22,6 +22,8 @@ export default function StoreMenu({ onAdd }) {
   const [menus, setMenus] = useState(loadStoreMenus)
   const [extraStores, setExtraStores] = useState([])
   const [storeName, setStoreName] = useState(null)
+  // 最初は「登録のあるお店」（なければジャンルを選ぶまでお店を出さない）
+  const [genre, setGenre] = useState(() => (loadStoreMenus().length ? 'used' : null))
   const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(EMPTY)
@@ -30,6 +32,17 @@ export default function StoreMenu({ onAdd }) {
   const [added, setAdded] = useState('')
 
   const stores = storeList(menus, extraStores)
+  const usedStores = new Set(menus.map((m) => m.store))
+  const genres = GENRES.filter((g) => g.id !== 'used' || usedStores.size > 0)
+  const genreStores = stores.filter((s) => (genre === 'used' ? usedStores.has(s.name) : s.genre === genre))
+
+  function selectGenre(id) {
+    setGenre(id)
+    setStoreName(null)
+    setAdding(false)
+    setEditing(false)
+    setAdded('')
+  }
   const store = stores.find((s) => s.name === storeName)
   const storeMenus = menus.filter((m) => m.store === storeName)
 
@@ -77,17 +90,28 @@ export default function StoreMenu({ onAdd }) {
   return (
     <div className="store-menu">
       <p className="meal-help">お店を選んで、登録したメニューをタップすると下の献立に入ります。数字は公式ページを見て、自分で1回だけ登録します（このスマホの中にだけ保存されます）。</p>
-      <div className="food-categories">
-        {stores.map((s) => (
-          <button key={s.id} type="button" className={storeName === s.name ? 'active' : ''} onClick={() => selectStore(s.name)}>
-            {s.name}
-          </button>
+      <select className="meal-select store-genre" aria-label="お店のジャンル" value={genre ?? ''} onChange={(e) => selectGenre(e.target.value || null)}>
+        <option value="" disabled>ジャンルを選ぶ</option>
+        {genres.map((g) => (
+          <option key={g.id} value={g.id}>{g.label}</option>
         ))}
-      </div>
-      <div className="store-add">
-        <input type="text" placeholder="ほかのお店の名前" value={newStore} onChange={(e) => setNewStore(e.target.value)} aria-label="ほかのお店の名前" />
-        <button type="button" onClick={addStore} disabled={!newStore.trim()}>追加</button>
-      </div>
+      </select>
+      {genre && (
+        <div className="food-categories">
+          {genreStores.map((s) => (
+            <button key={s.id} type="button" className={storeName === s.name ? 'active' : ''} onClick={() => selectStore(s.name)}>
+              {s.name}
+            </button>
+          ))}
+          {genreStores.length === 0 && <p className="meal-help">まだありません。下にお店の名前を入れて足してください。</p>}
+        </div>
+      )}
+      {genre === 'custom' && (
+        <div className="store-add">
+          <input type="text" placeholder="ほかのお店の名前" value={newStore} onChange={(e) => setNewStore(e.target.value)} aria-label="ほかのお店の名前" />
+          <button type="button" onClick={addStore} disabled={!newStore.trim()}>追加</button>
+        </div>
+      )}
 
       {store && (
         <div className="store-detail">
@@ -102,7 +126,7 @@ export default function StoreMenu({ onAdd }) {
           ) : (
             <>
               <div className="my-foods-head">
-                <label>登録したメニュー（タップで献立に入る）</label>
+                <label>登録したメニュー（タップで入る）</label>
                 <button type="button" className="my-foods-edit" onClick={() => setEditing(!editing)}>{editing ? '終わる' : '編集'}</button>
               </div>
               <div className="my-foods-list">

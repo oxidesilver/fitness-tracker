@@ -22,6 +22,18 @@ import './meal.css'
 
 const EMPTY_FORM = { name: '', kcal: '', protein: '', fat: '', carbs: '' }
 
+const FREQUENT_MAX = 20
+// 「登録した食品・よく食べるもの」をひらいているか（ひらいたままにしておく人もいるので覚えておく）
+const QUICK_KEY = 'fitness-tracker.mealQuickOpen'
+
+function loadQuickOpen() {
+  try {
+    return localStorage.getItem(QUICK_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 // 入れ方：build（食品・料理を選んで献立を作る）、store（お店の登録したメニューから）、label（栄養成分表示を見て数字を入れる）
 // build と store は同じ献立（items）に足していく
 const MODES = [
@@ -83,10 +95,24 @@ export default function MealPage() {
   const [myFoods, setMyFoods] = useState(loadMyFoods)
   // 登録した食品をタップして記録したもの（取り消しに使う）
   const [quick, setQuick] = useState(null)
+  // 登録した食品とよく食べるものは、最初はたたんでおく（画面が下に長くならないように。本人の希望）
+  const [quickOpen, setQuickOpen] = useState(loadQuickOpen)
+
+  function toggleQuick() {
+    const next = !quickOpen
+    setQuickOpen(next)
+    try {
+      localStorage.setItem(QUICK_KEY, next ? '1' : '0')
+    } catch {
+      // 覚えられなくてもひらける
+    }
+  }
 
   const dayMeals = records.filter((r) => r.date === date)
   const total = sumOf(dayMeals)
   const foods = frequentFoods(records)
+  // 「よく食べるもの」には、登録した食品と同じものは出さず、よく食べる順に20個まで（数が増えても選びやすいように）
+  const frequentList = foods.filter((f) => !myFoods.some((m) => m.name === f.name)).slice(0, FREQUENT_MAX)
   const autoName = recipeNames.length ? [...new Set(recipeNames)].join('・') : itemsName(items)
 
   function update(field, value) {
@@ -262,24 +288,31 @@ export default function MealPage() {
           ))}
         </div>
 
-        <MyFoods foods={myFoods} records={records} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
+        <button type="button" className="quick-toggle" aria-expanded={quickOpen} onClick={toggleQuick}>
+          <span>⭐ 登録・よく食べるもの{myFoods.length > 0 && `（${myFoods.length}件）`}</span>
+          <span aria-hidden="true">{quickOpen ? '▲' : '▼'}</span>
+        </button>
+        {quickOpen && (
+          <div className="quick-panel">
+            <MyFoods foods={myFoods} records={records} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
+            {frequentList.length > 0 && (
+              <>
+                <label htmlFor="meal-frequent">よく食べるものから選ぶ（登録していないもの）</label>
+                <select id="meal-frequent" className="meal-select" value="" onChange={(e) => pickFood(e.target.value)}>
+                  <option value="" disabled>選ぶと下に入ります</option>
+                  {frequentList.map((f) => (
+                    <option key={f.name} value={f.name}>{f.name}（{f.kcal}kcal）</option>
+                  ))}
+                </select>
+              </>
+            )}
+          </div>
+        )}
         {quick && (
           <p className="meal-saved my-food-done">
             ✓ {quick.name}を{MEAL_TIMES.find((t) => t.id === quick.time).label}に記録しました
             <button type="button" className="my-food-undo" onClick={undoQuick}>取り消す</button>
           </p>
-        )}
-
-        {foods.length > 0 && (
-          <>
-            <label htmlFor="meal-frequent">よく食べるものから選ぶ</label>
-            <select id="meal-frequent" className="meal-select" value="" onChange={(e) => pickFood(e.target.value)}>
-              <option value="" disabled>選ぶと下に入ります</option>
-              {foods.map((f) => (
-                <option key={f.name} value={f.name}>{f.name}（{f.kcal}kcal）</option>
-              ))}
-            </select>
-          </>
         )}
 
         <div className="segment meal-modes" role="group" aria-label="入れ方">
