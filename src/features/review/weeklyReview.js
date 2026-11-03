@@ -250,6 +250,7 @@ export function weeklyReview({ start, workouts, meals, weights, target, plan, go
       trainingDays,
       sets,
       mealDays: days.length,
+      roughMeals: meals.filter((m) => inWeek(m.date, start) && m.rough).length,
       avgScore: scores.length ? round(scores.reduce((a, b) => a + b, 0) / scores.length) : null,
       avgProtein: days.length ? round(avgProtein) : null,
       weightChange,
