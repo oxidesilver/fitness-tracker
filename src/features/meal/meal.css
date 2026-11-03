@@ -707,3 +707,12 @@
 .store-genre {
   margin-bottom: 12px;
 }
+
+/* ざっくり入力・食べていない */
+.rough-skip {
+  width: 100%;
+  margin-bottom: 12px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}

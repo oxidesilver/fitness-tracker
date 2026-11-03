@@ -49,6 +49,7 @@ export default function WeeklyReview({ workouts, meals, weights, target, goal })
               <strong>{r.stats.weightChange == null ? '−' : `${r.stats.weightChange > 0 ? '+' : ''}${r.stats.weightChange}kg`}</strong>
             </li>
           </ul>
+          {r.stats.roughMeals > 0 && <p className="review-sets">ざっくり入力の食事が{r.stats.roughMeals}回あるので、食事の数字は目安です。</p>}
           {r.stats.trainingDays > 0 && (
             <p className="review-sets">
               週のセット数：{AREAS.map((a) => `${a.label} ${r.stats.sets[a.id]}`).join('・')}（目安は各10セット以上）

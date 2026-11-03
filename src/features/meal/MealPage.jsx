@@ -3,7 +3,9 @@ import { formatDate, today } from '../../storage.js'
 import { loadDailyTarget } from '../goal/target.js'
 import FoodSearch from './FoodSearch.jsx'
 import LabelScan from './LabelScan.jsx'
+import RoughEntry from './RoughEntry.jsx'
 import ScoreCard from './ScoreCard.jsx'
+import { SKIPPED, roughValues } from './roughMeal.js'
 import StoreMenu from './StoreMenu.jsx'
 import MyFoods from './MyFoods.jsx'
 import PhotoImport from './PhotoImport.jsx'
@@ -97,6 +99,7 @@ export default function MealPage() {
   const [quick, setQuick] = useState(null)
   // 登録した食品とよく食べるものは、最初はたたんでおく（画面が下に長くならないように。本人の希望）
   const [quickOpen, setQuickOpen] = useState(loadQuickOpen)
+  const [roughOpen, setRoughOpen] = useState(false)
 
   function toggleQuick() {
     const next = !quickOpen
@@ -110,7 +113,8 @@ export default function MealPage() {
 
   const dayMeals = records.filter((r) => r.date === date)
   const total = sumOf(dayMeals)
-  const foods = frequentFoods(records)
+  // ざっくり入力と「食べていない」は、よく食べるものに入れない
+  const foods = frequentFoods(records.filter((r) => !r.rough && !r.skipped))
   // 「よく食べるもの」には、登録した食品と同じものは出さず、よく食べる順に20個まで（数が増えても選びやすいように）
   const frequentList = foods.filter((f) => !myFoods.some((m) => m.name === f.name)).slice(0, FREQUENT_MAX)
   const autoName = recipeNames.length ? [...new Set(recipeNames)].join('・') : itemsName(items)
@@ -124,6 +128,18 @@ export default function MealPage() {
   function recordMyFood(food) {
     const { name, kcal, protein, fat, carbs, items } = food
     const next = addMeal({ date, time, name, kcal, protein, fat, carbs, ...(items ? { items } : {}) })
+    setRecords(next)
+    setQuick(next[next.length - 1])
+    setSaved('')
+    setError('')
+  }
+
+  // ざっくり入力（type が null なら「食べていない」）
+  function recordRough(type) {
+    const meal = type
+      ? { name: `ざっくり：${type.label}`, ...roughValues(type.id, time, target), rough: type.id }
+      : SKIPPED
+    const next = addMeal({ date, time, ...meal })
     setRecords(next)
     setQuick(next[next.length - 1])
     setSaved('')
@@ -292,6 +308,15 @@ export default function MealPage() {
           <span>⭐ 登録・よく食べるもの{myFoods.length > 0 && `（${myFoods.length}件）`}</span>
           <span aria-hidden="true">{quickOpen ? '▲' : '▼'}</span>
         </button>
+        <button type="button" className="quick-toggle" aria-expanded={roughOpen} onClick={() => setRoughOpen(!roughOpen)}>
+          <span>🤷 ざっくり入力・食べていない</span>
+          <span aria-hidden="true">{roughOpen ? '▲' : '▼'}</span>
+        </button>
+        {roughOpen && (
+          <div className="quick-panel">
+            <RoughEntry time={time} target={target} onRecord={recordRough} />
+          </div>
+        )}
         {quickOpen && (
           <div className="quick-panel">
             <MyFoods foods={myFoods} records={records} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
@@ -310,7 +335,7 @@ export default function MealPage() {
         )}
         {quick && (
           <p className="meal-saved my-food-done">
-            ✓ {quick.name}を{MEAL_TIMES.find((t) => t.id === quick.time).label}に記録しました
+            ✓ {quick.skipped ? '「食べていない」' : quick.name}を{MEAL_TIMES.find((t) => t.id === quick.time).label}に記録しました
             <button type="button" className="my-food-undo" onClick={undoQuick}>取り消す</button>
           </p>
         )}
@@ -413,21 +438,28 @@ export default function MealPage() {
                 <li key={m.id}>
                   <div className="meal-item">
                     <span className="meal-name">{m.name}</span>
+                    {m.skipped ? (
+                      <span className="meal-detail">記録だけ（0kcal）</span>
+                    ) : (
                     <span className="meal-detail">
+                      {m.rough && '目安・'}
                       {m.kcal}kcal
                       {m.protein !== null && ` ・たんぱく質${m.protein}g`}
                       {m.fat !== null && ` ・脂質${m.fat}g`}
                       {m.carbs !== null && ` ・炭水化物${m.carbs}g`}
                     </span>
+                    )}
                   </div>
                   <div className="meal-actions">
-                    <button
-                      type="button"
-                      className={myFoods.some((f) => f.name === m.name) ? 'meal-register registered' : 'meal-register'}
-                      onClick={() => toggleMyFood(m)}
-                    >
-                      {myFoods.some((f) => f.name === m.name) ? '★ 登録済み' : '☆ 登録'}
-                    </button>
+                    {!m.rough && !m.skipped && (
+                      <button
+                        type="button"
+                        className={myFoods.some((f) => f.name === m.name) ? 'meal-register registered' : 'meal-register'}
+                        onClick={() => toggleMyFood(m)}
+                      >
+                        {myFoods.some((f) => f.name === m.name) ? '★ 登録済み' : '☆ 登録'}
+                      </button>
+                    )}
                     <button type="button" className="meal-delete" onClick={() => handleDelete(m)}>
                       消す
                     </button>

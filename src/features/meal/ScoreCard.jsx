@@ -63,6 +63,7 @@ export default function ScoreCard({ total, target, meals, date }) {
         </button>
       )}
       {missingPfc && <p className="meal-help">たんぱく質などが分からない食事があるので、その分は0として計算しています。</p>}
+      {meals.some((m) => m.rough) && <p className="meal-help">ざっくり入力の食事をふくむので、点数も目安です。</p>}
       <button type="button" className="meal-score-more" onClick={() => setOpen(!open)}>
         {open ? '点数のつけ方を閉じる' : '点数のつけ方と根拠を見る'}
       </button>
