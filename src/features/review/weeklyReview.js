@@ -90,10 +90,12 @@ function mealDays(meals, start) {
   return [...days.values()]
 }
 
-// その週の最後の体重（なければ null）
-function lastWeight(weights, start) {
-  const list = weights.filter((w) => inWeek(w.date, start)).sort((a, b) => a.date.localeCompare(b.date))
-  return list.length ? list[list.length - 1].weightKg : null
+// その週の体重の平均（測った日だけで出す。なければ null）。
+// 体重は週末に増えて平日に減るなど毎日ゆれる（Orsama ほか 2014 https://pubmed.ncbi.nlm.nih.gov/24504358/ ）ので、
+// 1日の数字ではなく週の平均で比べる。測り忘れた日があっても、ほかの日の平均で比べられる
+function weekWeight(weights, start) {
+  const list = weights.filter((w) => inWeek(w.date, start))
+  return list.length ? list.reduce((a, w) => a + w.weightKg, 0) / list.length : null
 }
 
 const round = (n) => Math.round(n)
@@ -215,9 +217,10 @@ export function weeklyReview({ start, workouts, meals, weights, target, plan, go
   }
 
   // --- 体重 ---
-  const now = lastWeight(weights, start)
-  const prev = lastWeight(weights, addDays(start, -7))
-  const twoAgo = lastWeight(weights, addDays(start, -14))
+  const now = weekWeight(weights, start)
+  const prev = weekWeight(weights, addDays(start, -7))
+  const twoAgo = weekWeight(weights, addDays(start, -14))
+  const weighDays = weights.filter((w) => inWeek(w.date, start)).length
   const losing = Number(goal?.loseKg) > 0
   let weightChange = null
   if (now !== null && prev !== null) {
@@ -254,6 +257,7 @@ export function weeklyReview({ start, workouts, meals, weights, target, plan, go
       avgScore: scores.length ? round(scores.reduce((a, b) => a + b, 0) / scores.length) : null,
       avgProtein: days.length ? round(avgProtein) : null,
       weightChange,
+      weighDays,
     },
   }
 }

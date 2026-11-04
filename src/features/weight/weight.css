@@ -37,3 +37,36 @@
   color: var(--danger);
   min-width: 56px;
 }
+
+/* 測り忘れのお知らせ */
+.weight-reminder {
+  border: 1px solid var(--accent);
+}
+
+.weight-reminder p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--sub);
+  line-height: 1.6;
+}
+
+/* 今日／昨日のボタン */
+.weight-days {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: -4px 0 12px;
+}
+
+.weight-days button {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  min-height: 40px;
+}
+
+.weight-days button.active {
+  border-color: var(--accent);
+  font-weight: 600;
+}

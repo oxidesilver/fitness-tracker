@@ -7,6 +7,7 @@ import { loadProfile } from './features/profile/profileStorage.js'
 import { hasUnseenReview } from './features/review/weeklyReview.js'
 import { loadMeals } from './features/meal/mealStorage.js'
 import { loadWorkouts } from './features/workout/workoutStorage.js'
+import { loadWeights } from './features/weight/weightStorage.js'
 import { today } from './storage.js'
 import WeightPage from './features/weight/WeightPage.jsx'
 import WorkoutPage from './features/workout/WorkoutPage.jsx'
@@ -34,15 +35,41 @@ function loadTab() {
   }
 }
 
+// 体重を記録している人が、今日まだ測っていなければ、体重のタブに印を出す（測り忘れのお知らせ。その日に1回見たら消す）
+const WEIGHT_SEEN_KEY = 'fitness-tracker.weightReminderSeen'
+
+function needsWeightReminder() {
+  const weights = loadWeights()
+  if (weights.length === 0 || weights.some((w) => w.date === today())) return false
+  try {
+    return localStorage.getItem(WEIGHT_SEEN_KEY) !== today()
+  } catch {
+    return false
+  }
+}
+
+function markWeightReminderSeen() {
+  try {
+    localStorage.setItem(WEIGHT_SEEN_KEY, today())
+  } catch {
+    // 覚えられなくても体重の画面は使える
+  }
+}
+
 export default function App() {
   const [tab, setTab] = useState(loadTab)
   // 先週の振り返りをまだ見ていなければ、グラフのタブに印を出す（通知の代わり）
+  const [weightBadge, setWeightBadge] = useState(() => (tab === 'weight' ? (markWeightReminderSeen(), false) : needsWeightReminder()))
   const [reviewBadge, setReviewBadge] = useState(() => hasUnseenReview(today(), [...loadWorkouts(), ...loadMeals()]))
   const { Page } = TABS.find((t) => t.id === tab)
 
   function changeTab(id) {
     setTab(id)
     if (id === 'charts') setReviewBadge(false)
+    if (id === 'weight') {
+      markWeightReminderSeen()
+      setWeightBadge(false)
+    }
     try {
       localStorage.setItem(TAB_KEY, id)
     } catch {
@@ -56,7 +83,9 @@ export default function App() {
       <main className="app">
         <Page />
       </main>
-      <TabBar tabs={TABS.map((t) => (t.id === 'charts' ? { ...t, badge: reviewBadge && tab !== 'charts' } : t))} current={tab} onChange={changeTab} />
+      <TabBar tabs={TABS.map((t) =>
+          t.id === 'charts' ? { ...t, badge: reviewBadge && tab !== 'charts' } : t.id === 'weight' ? { ...t, badge: weightBadge && tab !== 'weight' } : t,
+        )} current={tab} onChange={changeTab} />
     </>
   )
 }
