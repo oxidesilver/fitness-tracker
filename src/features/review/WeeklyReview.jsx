@@ -45,10 +45,13 @@ export default function WeeklyReview({ workouts, meals, weights, target, goal })
             <li><span>食事の点数（平均）</span><strong>{r.stats.avgScore ?? '−'}{r.stats.avgScore != null && '点'}</strong></li>
             <li><span>たんぱく質（平均）</span><strong>{r.stats.avgProtein ?? '−'}{r.stats.avgProtein != null && 'g'}</strong></li>
             <li>
-              <span>体重の変化</span>
+              <span>体重の変化（週の平均）</span>
               <strong>{r.stats.weightChange == null ? '−' : `${r.stats.weightChange > 0 ? '+' : ''}${r.stats.weightChange}kg`}</strong>
             </li>
           </ul>
+          {r.stats.weighDays > 0 && r.stats.weighDays < 3 && (
+            <p className="review-sets">この週に体重を測ったのは{r.stats.weighDays}日です。週3日以上測ると、平均があてになりやすくなります。</p>
+          )}
           {r.stats.roughMeals > 0 && <p className="review-sets">ざっくり入力の食事が{r.stats.roughMeals}回あるので、食事の数字は目安です。</p>}
           {r.stats.trainingDays > 0 && (
             <p className="review-sets">

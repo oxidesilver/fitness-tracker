@@ -1,6 +1,7 @@
 import { formatDate } from '../../storage.js'
 import { targetWeight } from '../goal/nutrition.js'
 import LineChart from './LineChart.jsx'
+import { addDays } from './dates.js'
 
 // 体重のグラフと、最新・期間の変化・目標までの数字。
 // weights は体重の全記録、goal は目標、from・to は表示する期間
@@ -14,6 +15,9 @@ export default function WeightChart({ weights, goal, from, to }) {
     return <p className="chart-empty">この期間の体重の記録がありません。体重の画面で記録すると、ここにグラフが出ます。</p>
   }
 
+  // 最近7日の平均（測った日だけ）。毎日のゆれや測り忘れの影響を小さくするため
+  const recent = sorted.filter((w) => w.date > addDays(latest.date, -7))
+  const recentAvg = recent.reduce((a, w) => a + w.weightKg, 0) / recent.length
   const first = inRange[0]
   const change = latest.weightKg - first.weightKg
   const sign = change > 0 ? '+' : change < 0 ? '−' : '±'
@@ -25,6 +29,11 @@ export default function WeightChart({ weights, goal, from, to }) {
           <span className="stat-label">最新</span>
           <span className="stat-value">{latest.weightKg.toFixed(1)}<small>kg</small></span>
           <span className="stat-sub">{latest.date.slice(5).replace('-', '/')}</span>
+        </div>
+        <div className="stat-tile">
+          <span className="stat-label">7日の平均</span>
+          <span className="stat-value">{recentAvg.toFixed(1)}<small>kg</small></span>
+          <span className="stat-sub">{recent.length}日分</span>
         </div>
         <div className="stat-tile">
           <span className="stat-label">期間の変化</span>
