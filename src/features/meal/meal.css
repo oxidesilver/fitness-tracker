@@ -700,6 +700,23 @@
   margin-bottom: 16px;
 }
 
+/* ひらいたほうは枠で囲み、中身がどのボタンのものか分かるようにする */
+.quick-group.open {
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 8px 0;
+}
+
+.quick-group.open .quick-toggle {
+  border: none;
+  font-weight: 600;
+}
+
+.quick-group.open .quick-panel {
+  margin-bottom: 8px;
+}
+
 .quick-panel .my-foods {
   margin-bottom: 12px;
 }

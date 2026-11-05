@@ -304,35 +304,39 @@ export default function MealPage() {
           ))}
         </div>
 
-        <button type="button" className="quick-toggle" aria-expanded={quickOpen} onClick={toggleQuick}>
-          <span>⭐ 登録・よく食べるもの{myFoods.length > 0 && `（${myFoods.length}件）`}</span>
-          <span aria-hidden="true">{quickOpen ? '▲' : '▼'}</span>
-        </button>
-        <button type="button" className="quick-toggle" aria-expanded={roughOpen} onClick={() => setRoughOpen(!roughOpen)}>
-          <span>🤷 ざっくり入力・食べていない</span>
-          <span aria-hidden="true">{roughOpen ? '▲' : '▼'}</span>
-        </button>
-        {roughOpen && (
-          <div className="quick-panel">
-            <RoughEntry time={time} target={target} onRecord={recordRough} />
-          </div>
-        )}
-        {quickOpen && (
-          <div className="quick-panel">
-            <MyFoods foods={myFoods} records={records} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
-            {frequentList.length > 0 && (
-              <>
-                <label htmlFor="meal-frequent">よく食べるものから選ぶ（登録していないもの）</label>
-                <select id="meal-frequent" className="meal-select" value="" onChange={(e) => pickFood(e.target.value)}>
-                  <option value="" disabled>選ぶと下に入ります</option>
-                  {frequentList.map((f) => (
-                    <option key={f.name} value={f.name}>{f.name}（{f.kcal}kcal）</option>
-                  ))}
-                </select>
-              </>
-            )}
-          </div>
-        )}
+        <div className={`quick-group${quickOpen ? ' open' : ''}`}>
+          <button type="button" className="quick-toggle" aria-expanded={quickOpen} onClick={toggleQuick}>
+            <span>⭐ 登録・よく食べるもの{myFoods.length > 0 && `（${myFoods.length}件）`}</span>
+            <span aria-hidden="true">{quickOpen ? '▲' : '▼'}</span>
+          </button>
+          {quickOpen && (
+            <div className="quick-panel">
+              <MyFoods foods={myFoods} records={records} onRecord={recordMyFood} onRemove={(name) => setMyFoods(removeMyFood(name))} />
+              {frequentList.length > 0 && (
+                <>
+                  <label htmlFor="meal-frequent">よく食べるものから選ぶ（登録していないもの）</label>
+                  <select id="meal-frequent" className="meal-select" value="" onChange={(e) => pickFood(e.target.value)}>
+                    <option value="" disabled>選ぶと下に入ります</option>
+                    {frequentList.map((f) => (
+                      <option key={f.name} value={f.name}>{f.name}（{f.kcal}kcal）</option>
+                    ))}
+                  </select>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <div className={`quick-group${roughOpen ? ' open' : ''}`}>
+          <button type="button" className="quick-toggle" aria-expanded={roughOpen} onClick={() => setRoughOpen(!roughOpen)}>
+            <span>🤷 ざっくり入力・食べていない</span>
+            <span aria-hidden="true">{roughOpen ? '▲' : '▼'}</span>
+          </button>
+          {roughOpen && (
+            <div className="quick-panel">
+              <RoughEntry time={time} target={target} onRecord={recordRough} />
+            </div>
+          )}
+        </div>
         {quick && (
           <p className="meal-saved my-food-done">
             ✓ {quick.skipped ? '「食べていない」' : quick.name}を{MEAL_TIMES.find((t) => t.id === quick.time).label}に記録しました
